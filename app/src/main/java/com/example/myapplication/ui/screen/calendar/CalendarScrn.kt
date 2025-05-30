@@ -1,4 +1,5 @@
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.data.remote.MonthData
 import com.example.myapplication.ui.data.remote.SimpleDate
+import com.example.myapplication.ui.screen.component.AddTaskDialog
 import com.example.myapplication.ui.theme.MatuleTheme
+import kotlinx.datetime.LocalDate
 import java.util.Calendar
 
 @Preview
@@ -37,10 +40,9 @@ fun dsa(){
         CalendarScreen()
     }
 }
-
 @Composable
 fun CalendarScreen() {
-    // Текущая дата (можно заменить на реальное получение даты)
+    // Текущая дата
     val today = remember {
         val calendar = Calendar.getInstance()
         SimpleDate(
@@ -51,6 +53,13 @@ fun CalendarScreen() {
     }
 
     val currentMonth = remember { mutableStateOf(today.toMonthData()) }
+    val showDialog = remember { mutableStateOf(false) }
+    val selectedDate = remember { mutableStateOf<LocalDate?>(null) }
+
+    // Конвертируем SimpleDate в LocalDate при выборе даты
+    fun SimpleDate.toLocalDate(): LocalDate {
+        return LocalDate(year, month, day)
+    }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         // Заголовок с месяцем
@@ -67,8 +76,26 @@ fun CalendarScreen() {
         MonthGrid(
             monthData = currentMonth.value,
             currentDay = today,
-            onDateSelected = { date -> /* Обработка выбора даты */ }
+            onDateSelected = { date ->
+                selectedDate.value = date.toLocalDate()
+                showDialog.value = true
+            }
         )
+    }
+
+    // Показываем диалог добавления задачи при выборе даты
+    selectedDate.value?.let { date ->
+        if (showDialog.value) {
+            AddTaskDialog(
+                date = date,
+                onDismiss = { showDialog.value = false },
+                onConfirm = { task ->
+                    // Здесь можно сохранить задачу (например, в ViewModel)
+                    println("New task added: $task")
+                    showDialog.value = false
+                }
+            )
+        }
     }
 }
 
@@ -153,16 +180,23 @@ fun DayCell(
         modifier = Modifier
             .aspectRatio(1f)
             .padding(4.dp)
-            .background(
-                color = if (isCurrentDay) MatuleTheme.colors.fox else Color.Transparent,
-                shape = CircleShape
+            .then(
+                if (isCurrentDay) {
+                    Modifier.border(
+                        width = 2.dp,
+                        color = MatuleTheme.colors.fox,
+                        shape = CircleShape
+                    )
+                } else {
+                    Modifier
+                }
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = day.toString(),
-            color = if (isCurrentDay) Color.White else MatuleTheme.colors.dark_blue
+            color = if (isCurrentDay) MatuleTheme.colors.fox else MatuleTheme.colors.dark_blue
         )
     }
 }
