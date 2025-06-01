@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -66,7 +67,7 @@ fun SignInScrn(onSignInSuccess: () -> Unit,navController: NavHostController) {
     val snackBarHostState = remember { SnackbarHostState() }
 
     Scaffold(
-        modifier = Modifier.background(MatuleTheme.colors.biskuit),
+        modifier = Modifier.background(MatuleTheme.colors.biskuit).systemBarsPadding(),
         snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             Row(

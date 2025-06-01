@@ -1,23 +1,24 @@
-package com.example.myapplication.ui.data
-
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
-import com.example.myapplication.ui.data.remote.Task
+import com.example.myapplication.ui.data.remote.Tasks.TaskEntity
 
 @Dao
 interface TaskDao {
-    @Insert
-    suspend fun insert(task: Task)
+    @Query("SELECT * FROM tasks")
+    suspend fun getAll(): List<TaskEntity>
 
-    @Update
-    suspend fun update(task: Task)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(task: TaskEntity)
 
     @Delete
-    suspend fun delete(task: Task)
+    suspend fun delete(task: TaskEntity)
+}
 
-    @Query("SELECT * FROM tasks WHERE date = :date ORDER BY priority DESC")
-    suspend fun getTasksByDate(date: Long): List<Task>
+class TaskRepository(private val dao: TaskDao) {
+    suspend fun getTasks(): List<TaskEntity> = dao.getAll()
+    suspend fun insert(task: TaskEntity) = dao.insert(task)
+    suspend fun delete(task: TaskEntity) = dao.delete(task)
 }

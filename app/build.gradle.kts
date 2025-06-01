@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-
     kotlin("plugin.serialization") version "2.0.21"
 
 
@@ -33,18 +32,25 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
     }
+    kotlin {
+        jvmToolchain{
+            languageVersion.set(JavaLanguageVersion.of(17)) // или другой версии
+        }
+    }
 }
 
 dependencies {
+    implementation ("io.insert-koin:koin-androidx-compose:3.5.0")
+    implementation ("androidx.navigation:navigation-compose:2.7.5")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     implementation(libs.androidx.runtime.livedata)
@@ -58,8 +64,8 @@ dependencies {
         implementation ("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
 // Room для хранения задач
-        implementation ("androidx.room:room-runtime:2.4.2")
-        implementation ("androidx.room:room-ktx:2.4.2")
+        implementation ("androidx.room:room-runtime:2.5.0")
+        implementation ("androidx.room:room-ktx:2.5.0")
         implementation ("androidx.recyclerview:recyclerview:1.3.2")
         implementation("androidx.datastore:datastore-preferences:1.1.3")
 

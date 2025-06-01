@@ -32,4 +32,7 @@
     <string name="opisanie_travaling">Умная, великолепная и модная коллекция Изучите сейчас</string>
     <string name="start_travaling_2">У Вас Есть Сила, Чтобы</string>
     <string name="opisanie_travaling_2">В вашей комнате много красивых и привлекательных растений</string>
+    <string name="task_today">Задачи на сегодня</string>
+    <string name="calendar">Календарь</string>
+    <string name="add_tasks">Добавить задачу</string>
 </resources>

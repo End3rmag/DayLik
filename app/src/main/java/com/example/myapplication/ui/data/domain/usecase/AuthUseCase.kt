@@ -4,7 +4,7 @@ import com.example.myapplication.ui.data.AuthRepository
 import com.example.myapplication.ui.data.local.LocalStorage
 import com.example.myapplication.ui.data.remote.Response.NetworkResponse
 import com.example.myapplication.ui.data.remote.User
-import com.example.myapplication.ui.data.remote.dto.LoginRequest
+import com.example.myapplication.ui.data.remote.Request.LoginRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

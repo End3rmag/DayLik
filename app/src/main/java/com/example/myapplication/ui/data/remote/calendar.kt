@@ -1,12 +1,19 @@
 package com.example.myapplication.ui.data.remote
 
+import kotlinx.datetime.LocalDate
+
 data class SimpleDate(
     val year: Int,
     val month: Int, // 1-12
     val day: Int
 ) {
+    fun formatAsString(): String = "${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}"
+
     fun toMonthData() = MonthData(year, month)
-}
+    fun toLocalDate(): LocalDate {
+        return LocalDate(year, month, day)
+
+    }
 
 data class MonthData(
     val year: Int,
@@ -52,4 +59,5 @@ data class MonthData(
         val y = if (month < 3) year - 1 else year
         return (day + (13 * (m + 1)) / 5 + y + y / 4 - y / 100 + y / 400) % 7
     }
+}
 }

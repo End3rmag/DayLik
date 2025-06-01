@@ -5,12 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -23,34 +23,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
-import com.example.myapplication.Registration
 import com.example.myapplication.SignIn
-import com.example.myapplication.ui.data.domain.usecase.AuthUseCase
-import com.example.myapplication.ui.data.remote.RetrofitClient
-import com.example.myapplication.ui.data.remote.User
-import com.example.myapplication.ui.screen.SignIn.SignInScrn
-import com.example.myapplication.ui.screen.SignIn.SignInViewModel
 import com.example.myapplication.ui.screen.component.AuthButton
 import com.example.myapplication.ui.screen.component.AuthTextField
 import com.example.myapplication.ui.screen.component.PasswordTextField
 import com.example.myapplication.ui.screen.component.TitleWithSubtitleText
 import com.example.myapplication.ui.theme.MatuleTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -60,7 +47,7 @@ fun SignUpScrn(onNavigationToHome: () -> Unit, navController: NavController) {
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
-        modifier = Modifier.fillMaxSize().background(MatuleTheme.colors.biskuit),
+        modifier = Modifier.fillMaxSize().background(MatuleTheme.colors.biskuit).systemBarsPadding(),
         topBar = {
             Row(
                 modifier = Modifier

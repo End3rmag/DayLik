@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screen.component
+package com.example.myapplication.ui.screen.component.Dialogs
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -25,8 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.ui.data.remote.Priority
-import com.example.myapplication.ui.data.remote.Task
+import com.example.myapplication.ui.data.remote.Tasks.Priority
+import com.example.myapplication.ui.data.remote.Tasks.Task
 import com.example.myapplication.ui.theme.MatuleTheme
 import kotlinx.datetime.LocalDate
 import java.util.UUID
@@ -46,6 +46,7 @@ fun AddTaskDialog(
         title = { Text("Добавить задачу на ${date.toString()}") },
         text = {
             Column {
+
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
@@ -115,7 +116,7 @@ private fun PriorityChip(
 ) {
     val priorityColor = when (priority) {
         Priority.LOW -> Color.Green
-        Priority.MEDIUM -> Color.Yellow
+        Priority.MEDIUM -> MatuleTheme.colors.fox
         Priority.HIGH -> Color.Red
     }
 

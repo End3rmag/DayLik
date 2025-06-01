@@ -1,12 +1,18 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
@@ -15,86 +21,94 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.ui.data.remote.MonthData
 import com.example.myapplication.ui.data.remote.SimpleDate
-import com.example.myapplication.ui.screen.component.AddTaskDialog
+import com.example.myapplication.ui.data.remote.SimpleDate.MonthData
+import com.example.myapplication.ui.data.remote.Tasks.Task
+import com.example.myapplication.ui.data.remote.Tasks.toSimpleDate
+import com.example.myapplication.ui.screen.component.Dialogs.AddTaskDialog
 import com.example.myapplication.ui.theme.MatuleTheme
-import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import java.util.Calendar
 
-@Preview
 @Composable
-fun dsa(){
-    MatuleTheme{
-        CalendarScreen()
-    }
-}
-@Composable
-fun CalendarScreen() {
-    // Текущая дата
+fun CalendarScrn(
+    onBack: () -> Unit,
+    tasksViewModel: TasksViewModel
+) {
+    // Получаем текущую дату
     val today = remember {
-        val calendar = Calendar.getInstance()
-        SimpleDate(
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH) + 1,
-            calendar.get(Calendar.DAY_OF_MONTH)
-        )
+        Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .date
+            .toSimpleDate()
     }
 
+    // Состояние текущего месяца
     val currentMonth = remember { mutableStateOf(today.toMonthData()) }
-    val showDialog = remember { mutableStateOf(false) }
-    val selectedDate = remember { mutableStateOf<LocalDate?>(null) }
 
-    // Конвертируем SimpleDate в LocalDate при выборе даты
-    fun SimpleDate.toLocalDate(): LocalDate {
-        return LocalDate(year, month, day)
-    }
+    // Используем tasks из ViewModel
+    val tasks by remember { derivedStateOf { tasksViewModel.tasks } }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        // Заголовок с месяцем
-        MonthHeader(
-            monthData = currentMonth.value,
-            onPrevious = { currentMonth.value = currentMonth.value.previous() },
-            onNext = { currentMonth.value = currentMonth.value.next() }
-        )
-
-        // Дни недели
-        WeekDaysHeader()
-
-        // Дни месяца
-        MonthGrid(
-            monthData = currentMonth.value,
-            currentDay = today,
-            onDateSelected = { date ->
-                selectedDate.value = date.toLocalDate()
-                showDialog.value = true
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MatuleTheme.colors.biskuit
+    ) {
+        Column(modifier = Modifier.padding(top = 16.dp)) {
+            // Кнопка назад
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier.padding(start = 8.dp)
+            ) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
             }
-        )
-    }
 
-    // Показываем диалог добавления задачи при выборе даты
-    selectedDate.value?.let { date ->
-        if (showDialog.value) {
-            AddTaskDialog(
-                date = date,
-                onDismiss = { showDialog.value = false },
-                onConfirm = { task ->
-                    // Здесь можно сохранить задачу (например, в ViewModel)
-                    println("New task added: $task")
-                    showDialog.value = false
+            // Календарь
+            MonthHeader(
+                monthData = currentMonth.value,
+                onPrevious = { currentMonth.value = currentMonth.value.previous() },
+                onNext = { currentMonth.value = currentMonth.value.next() }
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            WeekDaysHeader()
+
+            MonthGrid(
+                monthData = currentMonth.value,
+                currentDay = today,
+                tasks = tasks,
+                onDateSelected = { date ->
+                    tasksViewModel.showAddDialog(date.toLocalDate())
                 }
             )
+        }
+
+        // Диалог добавления задачи
+        if (tasksViewModel.showDialog) {
+            tasksViewModel.selectedDate?.let { date ->
+                AddTaskDialog(
+                    date = date,
+                    onDismiss = { tasksViewModel.dismissDialog() },
+                    onConfirm = { task ->
+                        tasksViewModel.addTask(task)
+                    }
+                )
+            }
         }
     }
 }
@@ -144,26 +158,27 @@ fun WeekDaysHeader() {
 fun MonthGrid(
     monthData: MonthData,
     currentDay: SimpleDate,
+    tasks: Map<SimpleDate, List<Task>>,
     onDateSelected: (SimpleDate) -> Unit
 ) {
     val daysInMonth = monthData.daysInMonth()
-    val firstDayOfWeek = monthData.getDayOfWeek(1) // 0-6 (Вс-Сб)
+    val firstDayOfWeek = monthData.getDayOfWeek(1)
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(7),
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Пустые ячейки для выравнивания первого дня
         items(firstDayOfWeek) { }
 
-        // Дни месяца
         items(daysInMonth) { day ->
             val date = SimpleDate(monthData.year, monthData.month, day + 1)
             val isToday = date == currentDay
+            val hasTasks = tasks[date]?.isNotEmpty() ?: false
 
             DayCell(
                 day = day + 1,
                 isCurrentDay = isToday,
+                hasTasks = hasTasks,
                 onClick = { onDateSelected(date) }
             )
         }
@@ -174,16 +189,19 @@ fun MonthGrid(
 fun DayCell(
     day: Int,
     isCurrentDay: Boolean,
+    hasTasks: Boolean, // Новый параметр
     onClick: () -> Unit
 ) {
-    Box(
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
         modifier = Modifier
             .aspectRatio(1f)
             .padding(4.dp)
             .then(
                 if (isCurrentDay) {
                     Modifier.border(
-                        width = 2.dp,
+                        width = 1.dp,
                         color = MatuleTheme.colors.fox,
                         shape = CircleShape
                     )
@@ -192,12 +210,25 @@ fun DayCell(
                 }
             )
             .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
     ) {
         Text(
             text = day.toString(),
-            color = if (isCurrentDay) MatuleTheme.colors.fox else MatuleTheme.colors.dark_blue
+            color = if (isCurrentDay) MatuleTheme.colors.fox else MatuleTheme.colors.dark_blue,
+            modifier = Modifier.padding(top = 4.dp)
         )
+
+        // Точка, если есть задачи
+        if (hasTasks) {
+            Box(
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .size(4.dp)
+                    .background(
+                        color = MatuleTheme.colors.dark_blue,
+                        shape = CircleShape
+                    )
+            )
+        }
     }
 }
 
