@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.data.remote.dto
+package com.example.myapplication.ui.data.remote.Request
 
 data class LoginRequest (
     val email: String,

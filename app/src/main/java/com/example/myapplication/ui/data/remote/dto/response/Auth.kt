@@ -1,7 +1,7 @@
-package com.example.myapplication.ui.data.remote
+package com.example.myapplication.ui.data.remote.dto.response
 
-import com.example.myapplication.ui.data.remote.dto.LoginRequest
-import com.example.myapplication.ui.data.remote.dto.response.TokenResponse
+import com.example.myapplication.ui.data.remote.Request.LoginRequest
+import com.example.myapplication.ui.data.remote.User
 import retrofit2.http.Body
 import retrofit2.http.POST
 
