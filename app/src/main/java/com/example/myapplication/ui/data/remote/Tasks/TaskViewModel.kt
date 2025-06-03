@@ -81,6 +81,13 @@ class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
             .sortedBy { it.priority }
     }
 
+    fun updateTask(updatedTask: Task) {
+        viewModelScope.launch {
+            repository.update(updatedTask.toEntity())
+            loadTasks()
+        }
+    }
+
     fun getUpcomingTasks(): List<DayTask> {
         val today = Clock.System.now()
             .toLocalDateTime(TimeZone.currentSystemDefault())

@@ -31,14 +31,11 @@ abstract class AppDatabase : RoomDatabase() {
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
-                            // Здесь можно выполнить начальную инициализацию БД
-                            // Например, добавить стартовые данные
                             Log.d("AppDatabase", "Database created")
                         }
 
                         override fun onOpen(db: SupportSQLiteDatabase) {
                             super.onOpen(db)
-                            // Вызывается при каждом открытии БД
                             Log.d("AppDatabase", "Database opened")
                         }
                     })

@@ -26,16 +26,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import com.example.myapplication.R
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.myapplication.ui.data.remote.MonthData
 import com.example.myapplication.ui.data.remote.SimpleDate
-import com.example.myapplication.ui.data.remote.SimpleDate.MonthData
 import com.example.myapplication.ui.data.remote.Tasks.Task
 import com.example.myapplication.ui.data.remote.Tasks.toSimpleDate
 import com.example.myapplication.ui.screen.component.Dialogs.AddTaskDialog
@@ -50,7 +52,6 @@ fun CalendarScrn(
     onBack: () -> Unit,
     tasksViewModel: TasksViewModel
 ) {
-    // Получаем текущую дату
     val today = remember {
         Clock.System.now()
             .toLocalDateTime(TimeZone.currentSystemDefault())
@@ -60,40 +61,37 @@ fun CalendarScrn(
 
     val currentMonth = remember { mutableStateOf(today.toMonthData()) }
 
-    val tasks by remember { derivedStateOf { tasksViewModel.tasks } }
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MatuleTheme.colors.biskuit
     ) {
-        Column(modifier = Modifier.padding(top = 16.dp)) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
-            }
+        Column(modifier = Modifier.padding(top = 22.dp)) {
+            Spacer(modifier = Modifier.height(18.dp))
 
+            // Шапка с месяцем и навигацией
             MonthHeader(
                 monthData = currentMonth.value,
                 onPrevious = { currentMonth.value = currentMonth.value.previous() },
                 onNext = { currentMonth.value = currentMonth.value.next() }
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(15.dp))
 
+            // Дни недели
             WeekDaysHeader()
 
+            // Сетка дней месяца
             MonthGrid(
                 monthData = currentMonth.value,
                 currentDay = today,
-                tasks = tasks,
+                tasks = tasksViewModel.tasks,
                 onDateSelected = { date ->
                     tasksViewModel.showAddDialog(date.toLocalDate())
                 }
             )
         }
 
+        // Диалог добавления задачи
         if (tasksViewModel.showDialog) {
             tasksViewModel.selectedDate?.let { date ->
                 AddTaskDialog(
@@ -138,7 +136,7 @@ fun MonthHeader(
 @Composable
 fun WeekDaysHeader() {
     Row(modifier = Modifier.fillMaxWidth()) {
-        listOf("Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб").forEach { day ->
+        listOf( "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс").forEach { day ->
             Text(
                 text = day,
                 modifier = Modifier.weight(1f),
@@ -163,23 +161,21 @@ fun MonthGrid(
         columns = GridCells.Fixed(7),
         modifier = Modifier.fillMaxWidth()
     ) {
+        // Пустые ячейки для выравнивания первого дня
         items(firstDayOfWeek) { }
 
+        // Ячейки с днями месяца
         items(daysInMonth) { day ->
             val date = SimpleDate(monthData.year, monthData.month, day + 1)
-            val isToday = date == currentDay
-            val hasTasks = tasks[date]?.isNotEmpty() ?: false
-
             DayCell(
                 day = day + 1,
-                isCurrentDay = isToday,
-                hasTasks = hasTasks,
+                isCurrentDay = date == currentDay,
+                hasTasks = tasks[date]?.isNotEmpty() ?: false,
                 onClick = { onDateSelected(date) }
             )
         }
     }
 }
-
 @Composable
 fun DayCell(
     day: Int,

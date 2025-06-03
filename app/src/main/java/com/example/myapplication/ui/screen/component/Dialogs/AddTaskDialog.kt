@@ -115,9 +115,9 @@ private fun PriorityChip(
     modifier: Modifier = Modifier
 ) {
     val priorityColor = when (priority) {
-        Priority.LOW -> Color.Green
+        Priority.LOW -> MatuleTheme.colors.darkgreen
         Priority.MEDIUM -> MatuleTheme.colors.fox
-        Priority.HIGH -> Color.Red
+        Priority.HIGH -> MatuleTheme.colors.bardovy
     }
 
     Surface(

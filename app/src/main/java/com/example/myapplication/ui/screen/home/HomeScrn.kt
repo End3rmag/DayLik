@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -41,6 +42,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.data.remote.Tasks.Priority
+import com.example.myapplication.ui.data.remote.Tasks.Task
+import com.example.myapplication.ui.screen.component.Dialogs.AddTaskDialog
+import com.example.myapplication.ui.screen.component.Dialogs.ChangeTaskDialog
 import com.example.myapplication.ui.screen.component.TasksItems.TaskItem
 import com.example.myapplication.ui.screen.component.TasksItems.UpcomingTaskItem
 import com.example.myapplication.ui.theme.MatuleTheme
@@ -55,11 +59,10 @@ fun HomeScrn(
     tasksViewModel: TasksViewModel
 ) {
     var showAddDialog by remember { mutableStateOf(false) }
-    var newTaskTitle by remember { mutableStateOf("") }
-    var newTaskDescription by remember { mutableStateOf("") }
-    var selectedPriority by remember { mutableStateOf(Priority.MEDIUM) }
+    var showEditDialog by remember { mutableStateOf(false) }
     val todayTasks by remember { derivedStateOf { tasksViewModel.getTodayTasks() } }
     val upcomingTasks by remember { derivedStateOf { tasksViewModel.getUpcomingTasks() } }
+    var selectedTask by remember { mutableStateOf<Task?>(null)}
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -69,7 +72,6 @@ fun HomeScrn(
                 .systemBarsPadding()
                 .padding(16.dp)
         ) {
-            // Шапка с кнопками
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(125.dp)
@@ -99,10 +101,15 @@ fun HomeScrn(
                         TaskItem(
                             task = todayTasks[index],
                             onDelete = { tasksViewModel.deleteTask(todayTasks[index]) },
+                            onClick = {
+                                selectedTask = todayTasks[index]
+                                showEditDialog = true
+                            },
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                     }
                 )
+
 
                 if (todayTasks.isEmpty()) {
                     item {
@@ -118,6 +125,11 @@ fun HomeScrn(
             }
 
             if (upcomingTasks.isNotEmpty()) {
+                Divider(
+                    color = MatuleTheme.colors.dark_blue.copy(alpha = 0.3f),
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
                 Text(
                     text = "Ближайшие задачи",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
@@ -134,7 +146,11 @@ fun HomeScrn(
                         dayTask.tasks.forEach { task ->
                             UpcomingTaskItem(
                                 task = task,
-                                onDelete = { tasksViewModel.deleteTask(task) }
+                                onDelete = { tasksViewModel.deleteTask(task) },
+                                onClick = {
+                                    selectedTask = task
+                                    showEditDialog = true
+                                }
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                         }
@@ -156,103 +172,36 @@ fun HomeScrn(
         }
     }
 
-    // Диалог добавления задачи
     if (showAddDialog) {
-        AlertDialog(
-            onDismissRequest = { showAddDialog = false },
-            title = { Text("Новая задача") },
-            text = {
-                Column {
-                    OutlinedTextField(
-                        value = newTaskTitle,
-                        onValueChange = { newTaskTitle = it },
-                        label = { Text("Название") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    OutlinedTextField(
-                        value = newTaskDescription,
-                        onValueChange = { newTaskDescription = it },
-                        label = { Text("Описание") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text("Приоритет:", color = MatuleTheme.colors.dark_blue)
-
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Priority.values().forEach { priority ->
-                            PriorityChip(
-                                priority = priority,
-                                isSelected = priority == selectedPriority,
-                                onSelected = { selectedPriority = priority }
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        tasksViewModel.addNewTask(
-                            title = newTaskTitle,
-                            description = newTaskDescription,
-                            priority = selectedPriority,
-                            date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-                        )
-                        showAddDialog = false
-                        newTaskTitle = ""
-                        newTaskDescription = ""
-                    },
-                    colors = ButtonDefaults.buttonColors(MatuleTheme.colors.fox)
-                ) {
-                    Text("Добавить")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddDialog = false }) {
-                    Text("Отмена", color = MatuleTheme.colors.dark_blue)
-                }
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        AddTaskDialog(
+            date = today,
+            onDismiss = { showAddDialog = false },
+            onConfirm = { newTask ->
+                tasksViewModel.addNewTask(
+                    title = newTask.title,
+                    description = newTask.description,
+                    priority = newTask.priority,
+                    date = newTask.date
+                )
             }
         )
     }
-}
 
-@Composable
-private fun PriorityChip(
-    priority: Priority,
-    isSelected: Boolean,
-    onSelected: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val priorityColor = when (priority) {
-        Priority.HIGH -> Color.Red
-        Priority.MEDIUM -> MatuleTheme.colors.fox
-        Priority.LOW -> Color.Green
-    }
-
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) priorityColor.copy(alpha = 0.2f) else Color.Transparent,
-        border = BorderStroke(1.dp, priorityColor)
-    ) {
-        Text(
-            text = when (priority) {
-                Priority.HIGH -> "Высокий"
-                Priority.MEDIUM -> "Средний"
-                Priority.LOW -> "Низкий"
-            },
-            color = MatuleTheme.colors.dark_blue,
-            modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 6.dp)
-                .clickable(onClick = onSelected)
-        )
+    selectedTask?.let { task ->
+        if (showEditDialog) {
+            ChangeTaskDialog(
+                task = task,
+                onDismiss = { showEditDialog = false },
+                onConfirm = { updatedTask ->
+                    tasksViewModel.updateTask(updatedTask)
+                    showEditDialog = false
+                },
+                onDelete = {
+                    tasksViewModel.deleteTask(task)
+                    showEditDialog = false
+                }
+            )
+        }
     }
 }

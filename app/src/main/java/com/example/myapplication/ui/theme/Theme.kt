@@ -24,7 +24,9 @@ data class MatuleColors(
     val color: Color,
     val dark_blue: Color,
     val biskuit: Color,
-    val fox: Color
+    val fox: Color,
+    val bardovy: Color,
+    val darkgreen: Color
 )
 
 @Immutable
@@ -61,7 +63,9 @@ val LocalMatuleColors = staticCompositionLocalOf {
         color = Color.Unspecified,
         dark_blue = Color.Unspecified,
         biskuit = Color.Unspecified,
-        fox = Color.Unspecified
+        fox = Color.Unspecified,
+        bardovy = Color.Unspecified,
+        darkgreen = Color.Unspecified
     )
 }
 
@@ -86,7 +90,10 @@ fun MatuleTheme( content: @Composable () -> Unit){
         color = Color(0xFF48B2E7),
         dark_blue = Color(0xFF102C4C),
         biskuit = Color(0xFFFFF6E1),
-        fox = Color(0xFFF0662B)
+        fox = Color(0xFFF0662B),
+        bardovy = Color(0xFFA52A2A),
+        darkgreen = Color(0xFF006400)
+
 
     )
     val matuleTypography = MatuleTextStyle(

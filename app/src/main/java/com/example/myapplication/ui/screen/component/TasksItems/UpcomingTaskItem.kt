@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.screen.component.TasksItems
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,11 +23,14 @@ import com.example.myapplication.ui.data.remote.Tasks.formatAsTimeString
 import com.example.myapplication.ui.theme.MatuleTheme
 
 @Composable
-fun UpcomingTaskItem(task: Task, onDelete: () -> Unit = {}) {
+fun UpcomingTaskItem(task: Task,
+                     onDelete: () -> Unit = {},
+                     onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable(onClick=onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Точка приоритета для ближайших задач
@@ -35,9 +39,9 @@ fun UpcomingTaskItem(task: Task, onDelete: () -> Unit = {}) {
                 .size(8.dp)
                 .background(
                     color = when (task.priority) {
-                        Priority.HIGH -> Color.Red
+                        Priority.HIGH -> MatuleTheme.colors.bardovy
                         Priority.MEDIUM -> MatuleTheme.colors.fox
-                        Priority.LOW -> Color.Green
+                        Priority.LOW -> MatuleTheme.colors.darkgreen
                     },
                     shape = CircleShape
                 )

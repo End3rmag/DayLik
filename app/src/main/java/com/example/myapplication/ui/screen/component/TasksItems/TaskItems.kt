@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.screen.component.TasksItems
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,11 +28,13 @@ import com.example.myapplication.ui.theme.MatuleTheme
 fun TaskItem(
     task: Task,
     onDelete: () -> Unit = {},
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .clickable(onClick=onClick)
             .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -40,9 +43,9 @@ fun TaskItem(
                 .size(14.dp)
                 .background(
                     color = when (task.priority) {
-                        Priority.HIGH -> Color.Red
+                        Priority.HIGH -> MatuleTheme.colors.bardovy
                         Priority.MEDIUM -> MatuleTheme.colors.fox
-                        Priority.LOW -> Color.Green
+                        Priority.LOW -> MatuleTheme.colors.darkgreen
                     },
                     shape = CircleShape
                 )
