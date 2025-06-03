@@ -17,10 +17,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,17 +33,23 @@ import com.example.myapplication.R
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.data.remote.MonthData
 import com.example.myapplication.ui.data.remote.SimpleDate
 import com.example.myapplication.ui.data.remote.Tasks.Task
 import com.example.myapplication.ui.data.remote.Tasks.toSimpleDate
 import com.example.myapplication.ui.screen.component.Dialogs.AddTaskDialog
+import com.example.myapplication.ui.screen.component.Dialogs.ChangeTaskDialog
+import com.example.myapplication.ui.screen.component.TasksItems.TaskItem
 import com.example.myapplication.ui.theme.MatuleTheme
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -60,6 +69,10 @@ fun CalendarScrn(
     }
 
     val currentMonth = remember { mutableStateOf(today.toMonthData()) }
+    val selectedDate = remember { mutableStateOf<SimpleDate?>(null) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var selectedTask by remember { mutableStateOf<Task?>(null)}
+
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -84,15 +97,96 @@ fun CalendarScrn(
             MonthGrid(
                 monthData = currentMonth.value,
                 currentDay = today,
+                selectedDay = selectedDate.value,
                 tasks = tasksViewModel.tasks,
                 onDateSelected = { date ->
-                    tasksViewModel.showAddDialog(date.toLocalDate())
+                    selectedDate.value = if (selectedDate.value == date) null else date
                 }
             )
-        }
+            selectedDate.value?.let { date ->
+                val tasksForSelectedDate by remember(date) {
+                    derivedStateOf {
+                        (tasksViewModel.tasks[date] ?: emptyList()).sortedBy { it.priority }
+                    }
+                }
 
-        // Диалог добавления задачи
-        if (tasksViewModel.showDialog) {
+                if (tasksForSelectedDate.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Divider(
+                        color = MatuleTheme.colors.dark_blue.copy(alpha = 0.3f),
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                    Row{
+                    Text(
+                        text = "Задачи на ${date.day}.${date.month}.${date.year}",
+                        style = MatuleTheme.typography.headingBold24,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                        Spacer(modifier = Modifier.padding(horizontal = 40.dp))
+
+                        IconButton(
+                        onClick = {
+                            tasksViewModel.showAddDialog(date.toLocalDate())
+                        },
+                        modifier = Modifier.size(24.dp).padding(top = 5.dp)
+
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Добавить задачу",
+                            tint = MatuleTheme.colors.dark_blue
+                        )
+                    }
+                    }
+                    TasksList(
+                        tasks = tasksForSelectedDate,
+                        onTaskClick = { task ->
+                            selectedTask = task
+                            showEditDialog = true
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                } else {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Divider(
+                        color = MatuleTheme.colors.dark_blue.copy(alpha = 0.3f),
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                    Row {
+                    Text(
+                        text = "Задачи на ${date.day}.${date.month}.${date.year}",
+                        style = MatuleTheme.typography.headingBold24,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                        Spacer(modifier = Modifier.padding(horizontal = 40.dp))
+                    IconButton(
+                        onClick = {
+                            tasksViewModel.showAddDialog(date.toLocalDate())
+                        },
+                        modifier = Modifier.size(24.dp).padding(top = 5.dp)
+
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Добавить задачу",
+                            tint = MatuleTheme.colors.dark_blue
+                        )
+                    }
+                    }
+                    Text(
+                        text = "На этот день задач нет",
+                        style = MatuleTheme.typography.bodyRegular14,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
+                    )
+                }
+            }
+        }
+    }
+    if (tasksViewModel.showDialog) {
             tasksViewModel.selectedDate?.let { date ->
                 AddTaskDialog(
                     date = date,
@@ -103,8 +197,24 @@ fun CalendarScrn(
                 )
             }
         }
+    // Диалог редактирования задачи
+    if (showEditDialog && selectedTask != null) {
+        ChangeTaskDialog(
+            task = selectedTask!!,
+            onDismiss = { showEditDialog = false },
+            onConfirm = { updatedTask ->
+                tasksViewModel.updateTask(updatedTask)
+                showEditDialog = false
+            },
+            onDelete = {
+                tasksViewModel.deleteTask(selectedTask!!)
+                showEditDialog = false
+            }
+        )
     }
 }
+
+
 
 @Composable
 fun MonthHeader(
@@ -124,7 +234,7 @@ fun MonthHeader(
             text = "${getMonthName(monthData.month)} ${monthData.year}",
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
-            style = MatuleTheme.typography.subTitleRegular16
+            style = MatuleTheme.typography.headingBold32
         )
 
         IconButton(onClick = onNext) {
@@ -150,6 +260,7 @@ fun WeekDaysHeader() {
 @Composable
 fun MonthGrid(
     monthData: MonthData,
+    selectedDay: SimpleDate?,
     currentDay: SimpleDate,
     tasks: Map<SimpleDate, List<Task>>,
     onDateSelected: (SimpleDate) -> Unit
@@ -170,6 +281,7 @@ fun MonthGrid(
             DayCell(
                 day = day + 1,
                 isCurrentDay = date == currentDay,
+                isSelectedDay = date == selectedDay,
                 hasTasks = tasks[date]?.isNotEmpty() ?: false,
                 onClick = { onDateSelected(date) }
             )
@@ -180,35 +292,44 @@ fun MonthGrid(
 fun DayCell(
     day: Int,
     isCurrentDay: Boolean,
-    hasTasks: Boolean, // Новый параметр
+    isSelectedDay: Boolean,
+    hasTasks: Boolean,
     onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .aspectRatio(1f)
-            .padding(4.dp)
-            .then(
-                if (isCurrentDay) {
-                    Modifier.border(
-                        width = 1.dp,
-                        color = MatuleTheme.colors.fox,
-                        shape = CircleShape
-                    )
-                } else {
-                    Modifier
-                }
-            )
-            .clickable(onClick = onClick),
-    ) {
-        Text(
-            text = day.toString(),
-            color = if (isCurrentDay) MatuleTheme.colors.fox else MatuleTheme.colors.dark_blue,
-            modifier = Modifier.padding(top = 4.dp)
+) {Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.Center,
+    modifier = Modifier
+        .aspectRatio(1f)
+        .padding(4.dp)
+        .then(
+            when {
+                isSelectedDay -> Modifier.border(
+                    width = 1.dp,
+                    color = MatuleTheme.colors.dark_blue,
+                    shape = CircleShape
+                )
+                isCurrentDay -> Modifier.border(
+                    width = 1.dp,
+                    color = MatuleTheme.colors.fox,
+                    shape = CircleShape
+                )
+                else -> Modifier
+            }
         )
+        .clickable(onClick = onClick),
+) {
+    Text(
+        text = day.toString(),
+        color = when {
+            isSelectedDay -> MatuleTheme.colors.dark_blue
+            isCurrentDay -> MatuleTheme.colors.fox
+            else -> MatuleTheme.colors.dark_blue
+        },
+        modifier = Modifier.padding(top = 4.dp)
+    )
 
-        // Точка, если есть задачи
+
+    // Точка, если есть задачи
         if (hasTasks) {
             Box(
                 modifier = Modifier
@@ -238,5 +359,27 @@ fun getMonthName(month: Int): String {
         11 -> "Ноябрь"
         12 -> "Декабрь"
         else -> ""
+    }
+}
+
+
+@Composable
+fun TasksList(
+    tasks: List<Task>,
+    onTaskClick: (Task) -> Unit // Принимает обработчик
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        tasks.forEach { task ->
+            TaskItem(
+                task = task,
+                onClick = { onTaskClick(task) }, // Передаём в TaskItem
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
     }
 }

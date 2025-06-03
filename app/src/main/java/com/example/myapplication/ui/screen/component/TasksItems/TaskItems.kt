@@ -28,16 +28,17 @@ import com.example.myapplication.ui.theme.MatuleTheme
 fun TaskItem(
     task: Task,
     onDelete: () -> Unit = {},
-    onClick: () -> Unit = {},
+    onClick: () -> Unit = {}, // Это параметр, который вы передаете
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick=onClick)
+            .clickable(onClick = onClick) // Здесь нужно использовать переданный onClick
             .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Остальной код без изменений
         Box(
             modifier = Modifier
                 .size(14.dp)

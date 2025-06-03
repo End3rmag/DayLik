@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name">DayLik</string>
     <string name="hello">Привет!</string>
     <string name="sign_in_subtitle">Заполните Свои Данные Или Продолжите Через Социальные Медиа</string>
     <string name="template_email">xyz@gmail.com</string>
