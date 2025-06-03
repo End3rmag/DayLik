@@ -29,9 +29,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.myapplication.Otp
+//import com.example.myapplication.Otp
 import com.example.myapplication.R
-import com.example.myapplication.SignIn
+import com.example.myapplication.Screen
+import com.example.myapplication.Screen.Otp
+import com.example.myapplication.Screen.SignIn
+//import com.example.myapplication.SignIn
 import com.example.myapplication.ui.screen.Otp.OptScrn
 import com.example.myapplication.ui.screen.component.AuthButton
 import com.example.myapplication.ui.screen.component.AuthTextField
@@ -55,7 +58,7 @@ fun RecoverPasswordScrn(navController: NavController) {
             )
 
             {
-                IconButton(onClick = {navController.navigate(route = SignIn)}) {
+                IconButton(onClick = {navController.navigate(Screen.SignIn.route)}) {
                     Icon(painter = painterResource(R.drawable.back_arrow),
                         contentDescription = null)
                 }
@@ -70,7 +73,7 @@ fun RecoverPasswordScrn(navController: NavController) {
             isDialogOpen = isDialogOpen,
             onDismissAndNavigate = {
                 isDialogOpen = false
-                navController.navigate(route = Otp)
+                navController.navigate(Screen.Otp.route)
             }
         )
     }

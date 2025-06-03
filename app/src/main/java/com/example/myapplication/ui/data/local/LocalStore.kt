@@ -19,4 +19,5 @@ class LocalStorage (val context: Context){
             preferences[tokenKey] = token
         }
     }
+    fun isLoggedIn(): Flow<Boolean> = tokenFlow.map { it.isNotEmpty() }
 }

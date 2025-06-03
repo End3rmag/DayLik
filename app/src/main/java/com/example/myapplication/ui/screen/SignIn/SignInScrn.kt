@@ -50,8 +50,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.R
-import com.example.myapplication.RecoverPassword
-import com.example.myapplication.Registration
+
+import com.example.myapplication.Screen
 import com.example.myapplication.ui.screen.SignUp.SignUpScrn
 import com.example.myapplication.ui.screen.component.AuthButton
 import com.example.myapplication.ui.screen.component.AuthTextField
@@ -100,7 +100,7 @@ fun SignInScrn(onSignInSuccess: () -> Unit,navController: NavHostController) {
 
             ) {
                 Button(
-                    onClick = { navController.navigate(Registration) },
+                    onClick = { navController.navigate(Screen.Registration.route) },
 
                     colors = ButtonDefaults.buttonColors(Color.Transparent),
                     elevation = null
@@ -166,7 +166,7 @@ fun SignInContent(paddingValues: PaddingValues, signInViewModel: SignInViewModel
                 .background(MatuleTheme.colors.biskuit)
         ) {
             Button(
-                onClick = { navController.navigate(RecoverPassword) },
+                onClick = { navController.navigate(Screen.RecoverPassword.route) },
                 modifier = Modifier.padding(8.dp),
                 colors = ButtonDefaults.buttonColors(Color.Transparent),
                 elevation = null

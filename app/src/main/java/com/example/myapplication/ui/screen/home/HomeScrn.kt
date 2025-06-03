@@ -40,13 +40,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.ui.data.remote.Tasks.DayTask
 import com.example.myapplication.ui.data.remote.Tasks.Priority
 import com.example.myapplication.ui.screen.component.TasksItems.TaskItem
 import com.example.myapplication.ui.screen.component.TasksItems.UpcomingTaskItem
 import com.example.myapplication.ui.theme.MatuleTheme
 import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
@@ -60,14 +58,6 @@ fun HomeScrn(
     var newTaskTitle by remember { mutableStateOf("") }
     var newTaskDescription by remember { mutableStateOf("") }
     var selectedPriority by remember { mutableStateOf(Priority.MEDIUM) }
-
-    // Получаем текущую дату
-    val today = remember {
-        Clock.System.now()
-            .toLocalDateTime(TimeZone.currentSystemDefault())
-            .date
-    }
-
     val todayTasks by remember { derivedStateOf { tasksViewModel.getTodayTasks() } }
     val upcomingTasks by remember { derivedStateOf { tasksViewModel.getUpcomingTasks() } }
 
@@ -82,26 +72,23 @@ fun HomeScrn(
             // Шапка с кнопками
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(125.dp)
             ) {
                 Text(
                     text = "Задачи на сегодня",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold)
                 )
 
-                Row {
-                    IconButton(onClick = onNavigateToCalendar) {
+                Row{
+                    IconButton(onClick = onNavigateToCalendar)  {
                         Icon(Icons.Default.CalendarToday, contentDescription = "Календарь")
                     }
-                    IconButton(onClick = { showAddDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Добавить задачу")
-                    }
+
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Список задач на сегодня
             LazyColumn(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -111,12 +98,12 @@ fun HomeScrn(
                     itemContent = { index ->
                         TaskItem(
                             task = todayTasks[index],
-                            onDelete = { tasksViewModel.deleteTask(todayTasks[index]) }
+                            onDelete = { tasksViewModel.deleteTask(todayTasks[index]) },
+                            modifier = Modifier.padding(vertical = 4.dp)
                         )
                     }
                 )
 
-                // Если задач нет, показываем сообщение
                 if (todayTasks.isEmpty()) {
                     item {
                         Text(
@@ -130,7 +117,6 @@ fun HomeScrn(
                 }
             }
 
-            // Ближайшие задачи
             if (upcomingTasks.isNotEmpty()) {
                 Text(
                     text = "Ближайшие задачи",
@@ -158,13 +144,13 @@ fun HomeScrn(
             }
         }
 
-        // Floating Action Button для добавления задач
         FloatingActionButton(
             onClick = { showAddDialog = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp),
-            containerColor = MatuleTheme.colors.fox
+            containerColor = MatuleTheme.colors.fox,
+            contentColor = Color.White
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add Task")
         }
@@ -246,9 +232,9 @@ private fun PriorityChip(
     modifier: Modifier = Modifier
 ) {
     val priorityColor = when (priority) {
-        Priority.LOW -> Color.Green
-        Priority.MEDIUM -> MatuleTheme.colors.fox
         Priority.HIGH -> Color.Red
+        Priority.MEDIUM -> MatuleTheme.colors.fox
+        Priority.LOW -> Color.Green
     }
 
     Surface(
@@ -259,9 +245,9 @@ private fun PriorityChip(
     ) {
         Text(
             text = when (priority) {
-                Priority.LOW -> "Низкий"
-                Priority.MEDIUM -> "Средний"
                 Priority.HIGH -> "Высокий"
+                Priority.MEDIUM -> "Средний"
+                Priority.LOW -> "Низкий"
             },
             color = MatuleTheme.colors.dark_blue,
             modifier = Modifier

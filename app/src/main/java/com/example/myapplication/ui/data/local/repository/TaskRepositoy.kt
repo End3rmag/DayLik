@@ -1,6 +1,7 @@
-package com.example.myapplication.ui.data.remote.Tasks
+package com.example.myapplication.ui.data.local.repository
 
-import TaskDao
+import com.example.myapplication.ui.data.local.TaskDao
+import com.example.myapplication.ui.data.remote.Tasks.TaskEntity
 
 
 class TaskRepository(private val dao: TaskDao) {

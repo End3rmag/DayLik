@@ -7,11 +7,14 @@ import com.example.myapplication.ui.data.remote.SimpleDate
 import com.example.myapplication.ui.data.remote.Tasks.DayTask
 import com.example.myapplication.ui.data.remote.Tasks.Priority
 import com.example.myapplication.ui.data.remote.Tasks.Task
-import com.example.myapplication.ui.data.remote.Tasks.TaskRepository
+import com.example.myapplication.ui.data.local.repository.TaskRepository
 import com.example.myapplication.ui.data.remote.Tasks.toEntity
 import com.example.myapplication.ui.data.remote.Tasks.toSimpleDate
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import java.util.UUID
 
 class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
@@ -69,12 +72,27 @@ class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
     }
 
     fun getTodayTasks(): List<Task> {
-        val today = LocalDate.fromEpochDays(0) // Замените на текущую дату
-        return _tasks[today.toSimpleDate()] ?: emptyList()
+        val today = Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .date
+        val allTasks = _tasks.values.flatten()
+        return allTasks
+            .filter { it.date == today }
+            .sortedBy { it.priority }
     }
 
     fun getUpcomingTasks(): List<DayTask> {
-        return _tasks.map { (date, tasks) -> DayTask(date, tasks) }
+        val today = Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .date
+        return _tasks
+            .filter { it.key.toLocalDate() > today }
+            .map { (date, tasks) ->
+                DayTask(
+                    date,
+                    tasks.sortedBy { it.priority }
+                )
+            }
             .sortedBy { it.date.toLocalDate().toEpochDays() }
     }
     fun addNewTask(title: String, description: String, priority: Priority, date: LocalDate) {

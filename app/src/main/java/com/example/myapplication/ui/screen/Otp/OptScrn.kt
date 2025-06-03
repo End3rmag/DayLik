@@ -52,7 +52,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.R
-import com.example.myapplication.ui.data.remote.dto.request.AuthorizationRequest
 import com.example.myapplication.ui.screen.component.AuthTextField
 import com.example.myapplication.ui.screen.component.TitleWithSubtitleText
 import com.example.myapplication.ui.theme.MatuleTheme

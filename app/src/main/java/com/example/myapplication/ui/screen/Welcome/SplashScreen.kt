@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.Navigation
 import androidx.navigation.Navigator
 import com.example.myapplication.R
-import com.example.myapplication.ui.data.domain.usecase.AuthUseCase
 
 import com.example.myapplication.ui.local.DataStoreOnBoarding
 import com.example.myapplication.ui.theme.MatuleTheme
@@ -38,21 +37,12 @@ import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun SplashScreen(
-    authUseCase: AuthUseCase,
-    dataStore: DataStoreOnBoarding,
-    onNavigateToSignIn: () -> Unit,
     onNavigateToHome: () -> Unit
-
 ) {
-    val context = LocalContext.current
-    val token by authUseCase.token.collectAsState(initial = "")
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                color = Color(0xFFFFF6E1)
-            ),
+            .background(color = Color(0xFFFFF6E1)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -64,16 +54,7 @@ fun SplashScreen(
 
         LaunchedEffect(Unit) {
             delay(3000)
-
-            val completed = dataStore.onBoardingCompleted.firstOrNull() ?: false
-
-            if (completed) {
-                if (token.isNotEmpty()) {
-                    onNavigateToHome()
-                } else {
-                    onNavigateToSignIn()
-                }
-            }
+            onNavigateToHome()
         }
     }
 }

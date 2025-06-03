@@ -58,10 +58,8 @@ fun CalendarScrn(
             .toSimpleDate()
     }
 
-    // Состояние текущего месяца
     val currentMonth = remember { mutableStateOf(today.toMonthData()) }
 
-    // Используем tasks из ViewModel
     val tasks by remember { derivedStateOf { tasksViewModel.tasks } }
 
     Surface(
@@ -69,7 +67,6 @@ fun CalendarScrn(
         color = MatuleTheme.colors.biskuit
     ) {
         Column(modifier = Modifier.padding(top = 16.dp)) {
-            // Кнопка назад
             IconButton(
                 onClick = onBack,
                 modifier = Modifier.padding(start = 8.dp)
@@ -77,7 +74,6 @@ fun CalendarScrn(
                 Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
             }
 
-            // Календарь
             MonthHeader(
                 monthData = currentMonth.value,
                 onPrevious = { currentMonth.value = currentMonth.value.previous() },
@@ -98,7 +94,6 @@ fun CalendarScrn(
             )
         }
 
-        // Диалог добавления задачи
         if (tasksViewModel.showDialog) {
             tasksViewModel.selectedDate?.let { date ->
                 AddTaskDialog(

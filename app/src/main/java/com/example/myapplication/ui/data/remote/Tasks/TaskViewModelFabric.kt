@@ -4,6 +4,7 @@ package com.example.myapplication.ui.data.remote.Tasks
 import TasksViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.myapplication.ui.data.local.repository.TaskRepository
 
 class TasksViewModelFactory(
     private val taskRepository: TaskRepository

@@ -8,10 +8,10 @@ import kotlinx.datetime.LocalDate
 @Entity(tableName = "tasks")
 data class TaskEntity(
     @PrimaryKey val id: String,
-    val date: Long, // храним как epoch days
+    val date: Long,
     val title: String,
     val description: String,
-    val priority: Int // храним ordinal значения enum
+    val priority: Int
 ) {
     fun toTask(): Task {
         return Task(

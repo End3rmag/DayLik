@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.data.remote.Tasks.Priority
 import com.example.myapplication.ui.data.remote.Tasks.Task
@@ -23,16 +24,20 @@ import com.example.myapplication.ui.data.remote.Tasks.formatAsTimeString
 import com.example.myapplication.ui.theme.MatuleTheme
 
 @Composable
-fun TaskItem(task: Task, onDelete: () -> Unit = {}) {
+fun TaskItem(
+    task: Task,
+    onDelete: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 4.dp),
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
-                .size(12.dp)
+                .size(14.dp)
                 .background(
                     color = when (task.priority) {
                         Priority.HIGH -> Color.Red
@@ -43,27 +48,32 @@ fun TaskItem(task: Task, onDelete: () -> Unit = {}) {
                 )
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(16.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = task.title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = if (task.priority == Priority.HIGH) FontWeight.Bold else FontWeight.Normal
+                ),
                 color = MatuleTheme.colors.dark_blue
             )
+
             if (task.description.isNotBlank()) {
                 Text(
                     text = task.description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MatuleTheme.colors.dark_blue.copy(alpha = 0.6f)
+                    color = MatuleTheme.colors.dark_blue.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
         }
+
         if (task.date != null) {
             Text(
                 text = task.date.formatAsTimeString(),
                 style = MaterialTheme.typography.labelSmall,
-                color = MatuleTheme.colors.dark_blue.copy(alpha = 0.6f),
+                color = MatuleTheme.colors.dark_blue.copy(alpha = 0.7f),
                 modifier = Modifier.padding(start = 8.dp)
             )
         }

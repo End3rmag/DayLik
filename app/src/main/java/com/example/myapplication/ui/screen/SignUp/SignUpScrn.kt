@@ -32,7 +32,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.R
-import com.example.myapplication.SignIn
+import com.example.myapplication.Screen
 import com.example.myapplication.ui.screen.component.AuthButton
 import com.example.myapplication.ui.screen.component.AuthTextField
 import com.example.myapplication.ui.screen.component.PasswordTextField
@@ -75,7 +75,7 @@ fun SignUpScrn(onNavigationToHome: () -> Unit, navController: NavController) {
                     .height(40.dp)
             ) {
                 Button(
-                    onClick = { navController.navigate(SignIn) },
+                    onClick = { navController.navigate(Screen.SignIn.route) },
 
                     colors = ButtonDefaults.buttonColors(Color.Transparent),
                     elevation = null

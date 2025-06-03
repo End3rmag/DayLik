@@ -13,7 +13,11 @@ data class Task(
     val priority: Priority
 )
 
-enum class Priority { LOW, MEDIUM, HIGH }
+enum class Priority {
+    HIGH,
+    MEDIUM,
+    LOW
+}
 
 fun LocalDate.formatAsString(): String =
     "${dayOfMonth.toString().padStart(2, '0')}.${monthNumber.toString().padStart(2, '0')}"
