@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -70,6 +71,7 @@ fun HomeScrn(
                 .fillMaxSize()
                 .background(MatuleTheme.colors.biskuit)
                 .systemBarsPadding()
+                .navigationBarsPadding()
                 .padding(16.dp)
         ) {
             Row(
@@ -164,7 +166,8 @@ fun HomeScrn(
             onClick = { showAddDialog = true },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp),
+                .padding(16.dp)
+                .navigationBarsPadding(),
             containerColor = MatuleTheme.colors.fox,
             contentColor = Color.White
         ) {
@@ -182,7 +185,9 @@ fun HomeScrn(
                     title = newTask.title,
                     description = newTask.description,
                     priority = newTask.priority,
-                    date = newTask.date
+                    date = newTask.date,
+                    time = newTask.time,
+                    notifyEnabled = newTask.notifyEnabled
                 )
             }
         )

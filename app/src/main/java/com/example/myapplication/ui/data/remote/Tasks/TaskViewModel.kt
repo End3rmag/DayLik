@@ -13,6 +13,7 @@ import com.example.myapplication.ui.data.remote.Tasks.toSimpleDate
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.util.UUID
@@ -102,14 +103,16 @@ class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
             }
             .sortedBy { it.date.toLocalDate().toEpochDays() }
     }
-    fun addNewTask(title: String, description: String, priority: Priority, date: LocalDate) {
+    fun addNewTask(title: String, description: String, priority: Priority, date: LocalDate, time: String? = null, notifyEnabled: Boolean = false ) {
         viewModelScope.launch {
             val newTask = Task(
                 id = UUID.randomUUID().toString(),
                 title = title,
                 description = description,
                 priority = priority,
-                date = date
+                date = date,
+                time = time,
+                notifyEnabled = notifyEnabled
             )
             repository.insert(newTask.toEntity())
             loadTasks() // Перезагружаем задачи после добавления

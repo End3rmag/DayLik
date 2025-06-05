@@ -1,10 +1,11 @@
 package com.example.myapplication.di
 
 import TasksViewModel
-import android.content.Context
-import androidx.room.Room
+import androidx.work.WorkManager
+import com.example.myapplication.ui.data.Worker.DailyNotificationsWorkerFactory
+import com.example.myapplication.ui.data.Worker.NotificationsManagement
+
 import com.example.myapplication.ui.data.local.AppDatabase
-import com.example.myapplication.ui.data.local.LocalStorage
 //import com.example.myapplication.ui.data.local.repository.AuthLocalRepository
 //import com.example.myapplication.ui.data.local.repository.TaskLocalRepository
 import com.example.myapplication.ui.data.local.repository.TaskRepository
@@ -20,5 +21,8 @@ val appModules = module {
     single { AppDatabase.getInstance(androidContext()) }
     single { get<AppDatabase>().taskDao() }
     single { TaskRepository(get()) }
+
+    single { NotificationsManagement (androidContext()) }
+
     viewModel { TasksViewModel(get()) }
 }

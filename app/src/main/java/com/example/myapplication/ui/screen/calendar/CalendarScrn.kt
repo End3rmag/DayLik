@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -78,7 +79,7 @@ fun CalendarScrn(
         modifier = Modifier.fillMaxSize(),
         color = MatuleTheme.colors.biskuit
     ) {
-        Column(modifier = Modifier.padding(top = 22.dp)) {
+        Column(modifier = Modifier.systemBarsPadding().navigationBarsPadding()) {
             Spacer(modifier = Modifier.height(18.dp))
 
             // Шапка с месяцем и навигацией
@@ -197,7 +198,6 @@ fun CalendarScrn(
                 )
             }
         }
-    // Диалог редактирования задачи
     if (showEditDialog && selectedTask != null) {
         ChangeTaskDialog(
             task = selectedTask!!,

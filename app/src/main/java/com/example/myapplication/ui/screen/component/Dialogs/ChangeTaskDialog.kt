@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,8 +28,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.example.myapplication.ui.data.remote.Tasks.Priority
@@ -44,6 +52,16 @@ fun ChangeTaskDialog(
     var title by remember { mutableStateOf(task.title) }
     var description by remember { mutableStateOf(task.description) }
     var priority by remember { mutableStateOf(task.priority) }
+    var time by remember { mutableStateOf("") }
+    var notifyEnabled by remember { mutableStateOf(false) }
+
+    val formatTime = remember(time) {
+        when {
+            time.isEmpty() -> ""
+            time.length <= 2 -> time
+            else -> "${time.take(2)}:${time.drop(2).take(2)}"
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -74,7 +92,32 @@ fun ChangeTaskDialog(
                         .heightIn(max = 150.dp)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { notifyEnabled = !notifyEnabled }
+                ) {
+                    OutlinedTextField(
+                        value = time,
+                        onValueChange = { newValue ->
+                            time = newValue.filter { it.isDigit() }.take(4)
+                        },
+                        label = { Text("00:00") },
+                        modifier = Modifier.width(100.dp),
+                        placeholder = { Text("00:00") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        visualTransformation = TimeTransformation()
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Checkbox(
+                        checked = notifyEnabled,
+                        onCheckedChange = { notifyEnabled = it }
+                    )
+                    Text("Уведомить")
+                }
 
                 Text("Приоритет:", color = MatuleTheme.colors.dark_blue)
 
@@ -120,7 +163,9 @@ fun ChangeTaskDialog(
                         val updatedTask = task.copy(
                             title = title,
                             description = description,
-                            priority = priority
+                            priority = priority,
+                            time = time.takeIf { it.isNotBlank() },
+                            notifyEnabled = notifyEnabled
                         )
                         onConfirm(updatedTask)
                         onDismiss()
@@ -172,3 +217,4 @@ private fun PriorityChip(
         )
     }
 }
+

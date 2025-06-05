@@ -11,7 +11,10 @@ data class TaskEntity(
     val date: Long,
     val title: String,
     val description: String,
-    val priority: Int
+    val priority: Int,
+    val time: String? = null,
+    val notifyEnabled: Boolean = false
+
 ) {
     fun toTask(): Task {
         return Task(
@@ -19,7 +22,9 @@ data class TaskEntity(
             date = LocalDate.fromEpochDays(date.toInt()),
             title = title,
             description = description,
-            priority = Priority.values()[priority]
+            priority = Priority.values()[priority],
+            time = time,
+            notifyEnabled = notifyEnabled
         )
     }
 }
@@ -30,6 +35,8 @@ fun Task.toEntity(): TaskEntity {
         date = date.toEpochDays().toLong(),
         title = title,
         description = description,
-        priority = priority.ordinal
+        priority = priority.ordinal,
+        time = time,
+        notifyEnabled = notifyEnabled
     )
 }

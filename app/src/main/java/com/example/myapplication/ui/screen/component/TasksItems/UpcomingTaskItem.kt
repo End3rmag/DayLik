@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.data.remote.Tasks.Priority
 import com.example.myapplication.ui.data.remote.Tasks.Task
+import com.example.myapplication.ui.data.remote.Tasks.formatAsTime
 import com.example.myapplication.ui.data.remote.Tasks.formatAsTimeString
 import com.example.myapplication.ui.theme.MatuleTheme
 
@@ -56,11 +57,14 @@ fun UpcomingTaskItem(task: Task,
             modifier = Modifier.weight(1f)
         )
 
-        Text(
-            text = task.date?.formatAsTimeString() ?: "",
-            style = MaterialTheme.typography.labelSmall,
-            color = MatuleTheme.colors.dark_blue.copy(alpha = 0.6f)
-        )
+        if (task.time != null) {
+            Text(
+                text = task.time.formatAsTime(),
+                style = MaterialTheme.typography.labelSmall,
+                color = MatuleTheme.colors.dark_blue.copy(alpha = 0.7f),
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
     }
 }
 
