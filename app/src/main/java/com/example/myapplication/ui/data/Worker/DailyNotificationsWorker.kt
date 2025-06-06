@@ -101,12 +101,11 @@ class TaskReminderWorker(
 ) : CoroutineWorker(context, workerParams), KoinComponent {
 
     private val taskRepository: TaskRepository by inject()
+    private val pref = context.getSharedPreferences("task_reminders", Context.MODE_PRIVATE)
 
     override suspend fun doWork(): Result {
         try {
-            Log.d("TaskReminder", "Worker started at ${System.currentTimeMillis()}")
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-            Log.d("TaskReminder", "Current time: $now")
             val tasks = taskRepository.getTasks()
                 .map { it.toTask() }
                 .filter { task ->
@@ -115,20 +114,24 @@ class TaskReminderWorker(
                             task.date == now.date &&
                             isTimeWithinHour(task.time, now)
                 }
-            Log.d("TaskReminder", "Found ${tasks.size} tasks for reminder")
 
             tasks.forEach { task ->
+                val notificationKey = "task_${task.id}_${task.date}_${task.time}"
+                val alreadyNotifed = pref.getBoolean(notificationKey, false)
+
+                if(!alreadyNotifed){
                 val notificationText = "Вы запланировали: ${task.title}\n" +
                         "На: ${task.time?.formatAsTime()}"
                 sendNotification(
                     title = "Напоминание",
                     text = notificationText
-                )
+                    )
+                }
+                pref.edit().putBoolean(notificationKey, true).apply()
             }
 
             return Result.success()
         } catch (e: Exception) {
-            Log.e("TaskReminderWorker", "Error in doWork", e)
             return Result.failure()
         }
     }
@@ -157,7 +160,6 @@ class TaskReminderWorker(
     @SuppressLint("MissingPermission")
     private fun sendNotification(title: String, text: String) {
         try {
-            Log.d("TaskReminder", "Creating notification channel")
             createNotificationChannel()
 
             val notificationId = title.hashCode()
@@ -168,11 +170,9 @@ class TaskReminderWorker(
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
 
-            Log.d("TaskReminder", "Building notification: title=$title, text=$text")
 
             with(NotificationManagerCompat.from(applicationContext)) {
                 notify(notificationId, builder.build())
-                Log.d("TaskReminder", "Notification displayed successfully, id=$notificationId")
             }
         } catch (e: Exception) {
             Log.e("TaskReminder", "Error sending notification", e)
@@ -193,6 +193,7 @@ class TaskReminderWorker(
             notificationManager.createNotificationChannel(channel)
         }
     }
+
 
     companion object {
         const val CHANNEL_ID = "task_reminders"

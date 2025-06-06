@@ -115,7 +115,7 @@ fun AddTaskDialog(
                         time = newValue.filter { it.isDigit() }.take(4)
                     },
                     label = { Text("00:00") },
-                    modifier = Modifier.width(100.dp).height(45.dp),
+                    modifier = Modifier.width(100.dp),
                     placeholder = { Text("00:00") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     visualTransformation = TimeTransformation()
