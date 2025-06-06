@@ -30,20 +30,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import com.example.myapplication.R
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.data.remote.MonthData
 import com.example.myapplication.ui.data.remote.SimpleDate
 import com.example.myapplication.ui.data.remote.Tasks.Task
@@ -55,7 +48,6 @@ import com.example.myapplication.ui.theme.MatuleTheme
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import java.util.Calendar
 
 @Composable
 fun CalendarScrn(
@@ -82,7 +74,6 @@ fun CalendarScrn(
         Column(modifier = Modifier.systemBarsPadding().navigationBarsPadding()) {
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Шапка с месяцем и навигацией
             MonthHeader(
                 monthData = currentMonth.value,
                 onPrevious = { currentMonth.value = currentMonth.value.previous() },
@@ -91,10 +82,8 @@ fun CalendarScrn(
 
             Spacer(modifier = Modifier.height(15.dp))
 
-            // Дни недели
             WeekDaysHeader()
 
-            // Сетка дней месяца
             MonthGrid(
                 monthData = currentMonth.value,
                 currentDay = today,
@@ -121,10 +110,10 @@ fun CalendarScrn(
                     Row{
                     Text(
                         text = "Задачи на ${date.day}.${date.month}.${date.year}",
-                        style = MatuleTheme.typography.headingBold24,
+                        style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                        Spacer(modifier = Modifier.padding(horizontal = 40.dp))
+                        Spacer(modifier = Modifier.padding(horizontal = 20.dp))
 
                         IconButton(
                         onClick = {
@@ -160,10 +149,10 @@ fun CalendarScrn(
                     Row {
                     Text(
                         text = "Задачи на ${date.day}.${date.month}.${date.year}",
-                        style = MatuleTheme.typography.headingBold24,
+                        style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                        Spacer(modifier = Modifier.padding(horizontal = 40.dp))
+                        Spacer(modifier = Modifier.padding(horizontal = 20.dp))
                     IconButton(
                         onClick = {
                             tasksViewModel.showAddDialog(date.toLocalDate())
@@ -180,7 +169,7 @@ fun CalendarScrn(
                     }
                     Text(
                         text = "На этот день задач нет",
-                        style = MatuleTheme.typography.bodyRegular14,
+                        style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp)
                     )
                 }
@@ -234,7 +223,7 @@ fun MonthHeader(
             text = "${getMonthName(monthData.month)} ${monthData.year}",
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
-            style = MatuleTheme.typography.headingBold32
+            style = MaterialTheme.typography.headlineSmall
         )
 
         IconButton(onClick = onNext) {
@@ -272,10 +261,8 @@ fun MonthGrid(
         columns = GridCells.Fixed(7),
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Пустые ячейки для выравнивания первого дня
         items(firstDayOfWeek) { }
 
-        // Ячейки с днями месяца
         items(daysInMonth) { day ->
             val date = SimpleDate(monthData.year, monthData.month, day + 1)
             DayCell(
@@ -328,8 +315,6 @@ fun DayCell(
         modifier = Modifier.padding(top = 4.dp)
     )
 
-
-    // Точка, если есть задачи
         if (hasTasks) {
             Box(
                 modifier = Modifier
@@ -366,7 +351,7 @@ fun getMonthName(month: Int): String {
 @Composable
 fun TasksList(
     tasks: List<Task>,
-    onTaskClick: (Task) -> Unit // Принимает обработчик
+    onTaskClick: (Task) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -376,7 +361,7 @@ fun TasksList(
         tasks.forEach { task ->
             TaskItem(
                 task = task,
-                onClick = { onTaskClick(task) }, // Передаём в TaskItem
+                onClick = { onTaskClick(task) },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))

@@ -16,30 +16,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.data.remote.Tasks.Priority
 import com.example.myapplication.ui.data.remote.Tasks.Task
 import com.example.myapplication.ui.data.remote.Tasks.formatAsTime
-import com.example.myapplication.ui.data.remote.Tasks.formatAsTimeString
 import com.example.myapplication.ui.theme.MatuleTheme
 
 @Composable
 fun TaskItem(
     task: Task,
     onDelete: () -> Unit = {},
-    onClick: () -> Unit = {}, // Это параметр, который вы передаете
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick) // Здесь нужно использовать переданный onClick
+            .clickable(onClick = onClick)
             .padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Остальной код без изменений
         Box(
             modifier = Modifier
                 .size(14.dp)
@@ -76,7 +73,7 @@ fun TaskItem(
         if (task.time != null) {
             Text(
                 text = task.time.formatAsTime(),
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MatuleTheme.colors.dark_blue.copy(alpha = 0.7f),
                 modifier = Modifier.padding(start = 8.dp)
             )

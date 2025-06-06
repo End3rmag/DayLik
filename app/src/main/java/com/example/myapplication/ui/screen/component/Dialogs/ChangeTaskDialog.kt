@@ -31,11 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.example.myapplication.ui.data.remote.Tasks.Priority
@@ -55,18 +51,10 @@ fun ChangeTaskDialog(
     var time by remember { mutableStateOf("") }
     var notifyEnabled by remember { mutableStateOf(false) }
 
-    val formatTime = remember(time) {
-        when {
-            time.isEmpty() -> ""
-            time.length <= 2 -> time
-            else -> "${time.take(2)}:${time.drop(2).take(2)}"
-        }
-    }
-
     AlertDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
-            usePlatformDefaultWidth = false // Важно!
+            usePlatformDefaultWidth = false
         ),
         modifier = Modifier.width(400.dp),
         title = { Text("Редактировать задачу") },

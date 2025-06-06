@@ -3,17 +3,16 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.ui.data.local.repository.TaskRepository
 import com.example.myapplication.ui.data.remote.SimpleDate
 import com.example.myapplication.ui.data.remote.Tasks.DayTask
 import com.example.myapplication.ui.data.remote.Tasks.Priority
 import com.example.myapplication.ui.data.remote.Tasks.Task
-import com.example.myapplication.ui.data.local.repository.TaskRepository
 import com.example.myapplication.ui.data.remote.Tasks.toEntity
 import com.example.myapplication.ui.data.remote.Tasks.toSimpleDate
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.util.UUID
@@ -115,7 +114,7 @@ class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
                 notifyEnabled = notifyEnabled
             )
             repository.insert(newTask.toEntity())
-            loadTasks() // Перезагружаем задачи после добавления
+            loadTasks()
         }
     }
 }

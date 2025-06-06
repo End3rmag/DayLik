@@ -12,7 +12,7 @@ import com.example.myapplication.ui.data.remote.Tasks.TaskEntity
 
 @Database(
     entities = [TaskEntity::class],
-    version = 2, // Увеличиваем версию для миграции
+    version = 2,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -22,7 +22,6 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // Миграция с версии 1 на 2 для добавления полей time и notifyEnabled
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE tasks ADD COLUMN time TEXT")
@@ -49,8 +48,8 @@ abstract class AppDatabase : RoomDatabase() {
                             Log.d("AppDatabase", "Database opened")
                         }
                     })
-                    .addMigrations(MIGRATION_1_2) // Добавляем миграцию
-                    .fallbackToDestructiveMigration() // Только для разработки!
+                    .addMigrations(MIGRATION_1_2)
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

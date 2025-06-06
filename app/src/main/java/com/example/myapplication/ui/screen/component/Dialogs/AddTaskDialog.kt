@@ -3,6 +3,7 @@ package com.example.myapplication.ui.screen.component.Dialogs
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,6 +41,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import androidx.room.util.TableInfo
 import com.example.myapplication.ui.data.remote.Tasks.Priority
 import com.example.myapplication.ui.data.remote.Tasks.Task
 import com.example.myapplication.ui.theme.MatuleTheme
@@ -47,11 +50,11 @@ import java.util.UUID
 @Preview
 @Composable
 fun AddTaskDialogPreview() {
-    MatuleTheme { // Используйте вашу тему, если она есть
+    MatuleTheme {
         AddTaskDialog(
-            date = LocalDate(2023, 12, 31), // Пример даты
-            onDismiss = {}, // Пустой лямбда для закрытия
-            onConfirm = {} // Пустой лямбда для подтверждения
+            date = LocalDate(2023, 12, 31),
+            onDismiss = {},
+            onConfirm = {}
         )
     }
 }
@@ -61,19 +64,14 @@ fun AddTaskDialog(
     onDismiss: () -> Unit,
     onConfirm: (Task) -> Unit
 ) {
+    val items = listOf("Ежедневно","Еженедельно","Ежемесечно","Ежегодно")
+    var expanded by remember { mutableStateOf(false) }
+    var selectedItem by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var priority by remember { mutableStateOf(Priority.MEDIUM) }
+    var priority by remember { mutableStateOf(Priority.LOW) }
     var time by remember { mutableStateOf("") }
     var notifyEnabled by remember { mutableStateOf(false) }
-
-    val formatTime = remember(time) {
-        when {
-            time.isEmpty() -> ""
-            time.length <= 2 -> time
-            else -> "${time.take(2)}:${time.drop(2).take(2)}"
-        }
-    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -117,7 +115,7 @@ fun AddTaskDialog(
                         time = newValue.filter { it.isDigit() }.take(4)
                     },
                     label = { Text("00:00") },
-                    modifier = Modifier.width(100.dp),
+                    modifier = Modifier.width(100.dp).height(45.dp),
                     placeholder = { Text("00:00") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     visualTransformation = TimeTransformation()

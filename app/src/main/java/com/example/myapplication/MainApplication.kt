@@ -27,13 +27,8 @@ class MainApplication : Application() {
             .build()
         WorkManager.initialize(this, config)
 
-        if (!notificationWorkIsScheduled()) {
             val notificationsManagement = NotificationsManagement(applicationContext)
             notificationsManagement.setupAllNotifications()
-        }
-    }
-    private fun notificationWorkIsScheduled(): Boolean {
-        // Здесь можно добавить логику проверки, установлены ли уже работы
-        return false
+
     }
 }

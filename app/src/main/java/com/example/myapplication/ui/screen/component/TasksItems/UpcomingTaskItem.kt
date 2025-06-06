@@ -15,12 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.ui.data.remote.Tasks.Priority
 import com.example.myapplication.ui.data.remote.Tasks.Task
 import com.example.myapplication.ui.data.remote.Tasks.formatAsTime
-import com.example.myapplication.ui.data.remote.Tasks.formatAsTimeString
 import com.example.myapplication.ui.theme.MatuleTheme
 
 @Composable
@@ -34,7 +32,6 @@ fun UpcomingTaskItem(task: Task,
             .clickable(onClick=onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Точка приоритета для ближайших задач
         Box(
             modifier = Modifier
                 .size(8.dp)

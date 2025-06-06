@@ -5,22 +5,17 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import android.util.Log
-import com.example.myapplication.R
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.myapplication.MainApplication
+import com.example.myapplication.R
 import com.example.myapplication.ui.data.local.repository.TaskRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.example.myapplication.ui.data.remote.Tasks.formatAsTime
 import kotlinx.datetime.Clock
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atTime
 import kotlinx.datetime.toLocalDateTime
-import org.koin.android.ext.android.getKoin
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -123,8 +118,8 @@ class TaskReminderWorker(
             Log.d("TaskReminder", "Found ${tasks.size} tasks for reminder")
 
             tasks.forEach { task ->
-                val notificationText = "У вас запланировано: ${task.title}\n" +
-                        "На:${task.time}"
+                val notificationText = "Вы запланировали: ${task.title}\n" +
+                        "На: ${task.time?.formatAsTime()}"
                 sendNotification(
                     title = "Напоминание",
                     text = notificationText

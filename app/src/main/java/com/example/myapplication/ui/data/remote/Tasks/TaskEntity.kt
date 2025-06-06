@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
 
-// TaskEntity.kt
 @Entity(tableName = "tasks")
 data class TaskEntity(
     @PrimaryKey val id: String,

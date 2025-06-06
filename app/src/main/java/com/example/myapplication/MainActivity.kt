@@ -6,16 +6,12 @@ import SplashScreen
 import TasksViewModel
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import com.example.myapplication.ui.data.Worker.DailyNotificationsWorker
 import com.example.myapplication.ui.theme.MatuleTheme
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -25,17 +21,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 1)
-            val workRequest = OneTimeWorkRequestBuilder<DailyNotificationsWorker>()
-                .build()
-
-            WorkManager.getInstance(this).enqueue(workRequest)
-
-// Для отслеживания статуса Worker’а
-            WorkManager.getInstance(this)
-                .getWorkInfoByIdLiveData(workRequest.id)
-                .observe(this) { workInfo ->
-                    Log.d("WorkerTest", "Work state: ${workInfo.state}")
-                }
         }
         setContent {
             val navController = rememberNavController()
@@ -84,8 +69,6 @@ sealed class Screen(val route: String) {
     object SignIn : Screen("signin")
     object RecoverPassword : Screen("recoverpassword")
     object Otp : Screen("otp")
-    object SignUp : Screen("signup")
-    object Profile : Screen("profile")
     object Registration : Screen("registration")
-    object Slides : Screen("slides")
+
 }
