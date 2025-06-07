@@ -107,19 +107,20 @@ fun CalendarScrn(
                         thickness = 1.dp,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
-                    Row{
+                    Row (modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
                     Text(
                         text = "Задачи на ${date.day}.${date.month}.${date.year}",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                        Spacer(modifier = Modifier.padding(horizontal = 20.dp))
-
                         IconButton(
                         onClick = {
                             tasksViewModel.showAddDialog(date.toLocalDate())
                         },
-                        modifier = Modifier.size(24.dp).padding(top = 5.dp)
+
 
                     ) {
                         Icon(
@@ -146,18 +147,21 @@ fun CalendarScrn(
                         thickness = 1.dp,
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
-                    Row {
+                    Row (modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
                     Text(
                         text = "Задачи на ${date.day}.${date.month}.${date.year}",
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
-                        Spacer(modifier = Modifier.padding(horizontal = 20.dp))
+
                     IconButton(
                         onClick = {
                             tasksViewModel.showAddDialog(date.toLocalDate())
                         },
-                        modifier = Modifier.size(24.dp).padding(top = 5.dp)
+
 
                     ) {
                         Icon(

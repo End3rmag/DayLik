@@ -1,14 +1,19 @@
 package com.example.myapplication.ui.data.Worker
 import android.annotation.SuppressLint
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.myapplication.MainActivity
 import com.example.myapplication.R
 import com.example.myapplication.ui.data.local.repository.TaskRepository
 import com.example.myapplication.ui.data.remote.Tasks.formatAsTime
@@ -36,10 +41,10 @@ class DailyNotificationsWorker(
                 .filter { it.toTask().date == today }
 
             val text = if (tasks.isNotEmpty()) {
-                "На сегодня у вас ${tasks.size} ${tasksCountText(tasks.size)}\n" +
+                "На сегодня у вас  ${tasks.size} ${tasksCountText(tasks.size)}\n" +
                         "Зайдите в приложение чтобы узнать какие.\uD83E\uDD13"
             } else {
-                "На сегодня задач нет, можно пить пиво!\uD83C\uDF7B"
+                "На сегодня задач нет."
             }
 
             sendNotification(text)
@@ -77,11 +82,25 @@ class DailyNotificationsWorker(
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Ежедневные напоминания"
-            val descriptionText = "Канал для ежедневных напоминаний о задачах"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
+            val importance = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                NotificationManager.IMPORTANCE_HIGH
+            } else {
+                NotificationManager.IMPORTANCE_DEFAULT
+            }
+
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Ежедневные напоминания",
+                importance
+            ).apply {
+                description = "Канал для ежедневных напоминаний о задачах"
+
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                    enableVibration(true)
+                    vibrationPattern = longArrayOf(0, 500, 200, 500)
+                    enableLights(true)
+                    lightColor = Color.BLUE
+                }
             }
 
             val notificationManager = applicationContext.getSystemService(
@@ -89,7 +108,6 @@ class DailyNotificationsWorker(
             notificationManager.createNotificationChannel(channel)
         }
     }
-
     companion object {
         const val CHANNEL_ID = "daily_reminders"
     }
@@ -159,33 +177,54 @@ class TaskReminderWorker(
 
     @SuppressLint("MissingPermission")
     private fun sendNotification(title: String, text: String) {
-        try {
-            createNotificationChannel()
 
-            val notificationId = title.hashCode()
-            val builder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+        createLegacyNotificationChannel()
+
+        val notificationId = title.hashCode()
+        val builder = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+                .setSmallIcon(R.drawable.generated_image)
+                .setContentTitle(title)
+                .setContentText(text)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setAutoCancel(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setVibrate(longArrayOf(0, 500, 200, 500))
+                .setLights(Color.RED, 1000, 1000)
+                .setFullScreenIntent(createFullScreenIntent(), true)
+        } else {
+            NotificationCompat.Builder(applicationContext, CHANNEL_ID)
                 .setSmallIcon(R.drawable.generated_image)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
+        }
 
-
-            with(NotificationManagerCompat.from(applicationContext)) {
+        with(NotificationManagerCompat.from(applicationContext)) {
+            try {
                 notify(notificationId, builder.build())
+            } catch (e: Exception) {
+                Log.e("TaskReminder", "Error sending notification", e)
             }
-        } catch (e: Exception) {
-            Log.e("TaskReminder", "Error sending notification", e)
         }
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Напоминания о задачах"
-            val descriptionText = "Канал для напоминаний о задачах"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
+    private fun createLegacyNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Срочные напоминания",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Важные напоминания о задачах"
+                enableLights(true)
+                lightColor = Color.RED
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 500, 200, 500)
+                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             }
 
             val notificationManager = applicationContext.getSystemService(
@@ -194,8 +233,25 @@ class TaskReminderWorker(
         }
     }
 
+    private fun createFullScreenIntent(): PendingIntent? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            val intent = Intent(applicationContext, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra("from_notification", true)
+            }
+            return PendingIntent.getActivity(
+                applicationContext,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+        }
+        return null
+    }
+
 
     companion object {
         const val CHANNEL_ID = "task_reminders"
     }
+
 }
