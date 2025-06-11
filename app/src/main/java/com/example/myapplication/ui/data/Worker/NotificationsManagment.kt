@@ -13,6 +13,7 @@ class NotificationsManagement(
     fun setupAllNotifications() {
         setupDailyNotification()
         setupTaskReminders()
+        setupDayBeforeNotifications()
     }
 
     private fun setupDailyNotification() {
@@ -39,6 +40,21 @@ class NotificationsManagement(
             "task_reminder_work",
             ExistingPeriodicWorkPolicy.KEEP,
             reminderRequest
+        )
+    }
+
+    private fun setupDayBeforeNotifications() {
+        val dayBeforeRequest = PeriodicWorkRequestBuilder<DayBeforeNotificationWorker>(
+            24, TimeUnit.HOURS
+        ).setInitialDelay(
+            calculateInitialDelay(19,0),
+            TimeUnit.MILLISECONDS
+        ).build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "day_before_notification_work",
+            ExistingPeriodicWorkPolicy.KEEP,
+            dayBeforeRequest
         )
     }
 

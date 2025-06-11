@@ -12,7 +12,7 @@ import com.example.myapplication.ui.data.remote.Tasks.TaskEntity
 
 @Database(
     entities = [TaskEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,7 +26,12 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE tasks ADD COLUMN time TEXT")
                 database.execSQL("ALTER TABLE tasks ADD COLUMN notifyEnabled INTEGER NOT NULL DEFAULT 0")
+            }
+        }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE tasks ADD COLUMN notifyDayBefore INTEGER NOT NULL DEFAULT 0")
             }
         }
 
@@ -48,7 +53,7 @@ abstract class AppDatabase : RoomDatabase() {
                             Log.d("AppDatabase", "Database opened")
                         }
                     })
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

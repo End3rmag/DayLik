@@ -12,7 +12,8 @@ data class TaskEntity(
     val description: String,
     val priority: Int,
     val time: String? = null,
-    val notifyEnabled: Boolean = false
+    val notifyEnabled: Boolean = false,
+    val notifyDayBefore: Boolean = false
 
 ) {
     fun toTask(): Task {
@@ -23,7 +24,8 @@ data class TaskEntity(
             description = description,
             priority = Priority.values()[priority],
             time = time,
-            notifyEnabled = notifyEnabled
+            notifyEnabled = notifyEnabled,
+            notifyDayBefore = notifyDayBefore
         )
     }
 }
@@ -36,6 +38,7 @@ fun Task.toEntity(): TaskEntity {
         description = description,
         priority = priority.ordinal,
         time = time,
-        notifyEnabled = notifyEnabled
+        notifyEnabled = notifyEnabled,
+        notifyDayBefore = notifyDayBefore
     )
 }

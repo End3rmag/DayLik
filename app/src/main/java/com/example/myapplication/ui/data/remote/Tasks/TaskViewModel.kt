@@ -1,4 +1,5 @@
 // TasksViewModel.kt
+import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -102,7 +103,13 @@ class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
             }
             .sortedBy { it.date.toLocalDate().toEpochDays() }
     }
-    fun addNewTask(title: String, description: String, priority: Priority, date: LocalDate, time: String? = null, notifyEnabled: Boolean = false ) {
+    fun addNewTask(title: String,
+                   description: String,
+                   priority: Priority,
+                   date: LocalDate,
+                   time: String? = null,
+                   notifyEnabled: Boolean = false,
+                   notifyDayBefore: Boolean = false ) {
         viewModelScope.launch {
             val newTask = Task(
                 id = UUID.randomUUID().toString(),
@@ -111,8 +118,10 @@ class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
                 priority = priority,
                 date = date,
                 time = time,
-                notifyEnabled = notifyEnabled
+                notifyEnabled = notifyEnabled,
+                notifyDayBefore = notifyDayBefore
             )
+            Log.d("TASK_DEBUG", "Adding task to repository: $newTask")
             repository.insert(newTask.toEntity())
             loadTasks()
         }

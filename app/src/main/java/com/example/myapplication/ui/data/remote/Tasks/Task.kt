@@ -9,7 +9,8 @@ data class Task(
     val description: String,
     val priority: Priority,
     val time: String? = null,
-    val notifyEnabled: Boolean = false
+    val notifyEnabled: Boolean = false,
+    val notifyDayBefore: Boolean = false
 )
 
 enum class Priority {

@@ -47,17 +47,24 @@ class MainApplication : Application() {
 
     }
     fun clearOldNotifications(context: Context) {
-        val prefs = context.getSharedPreferences("task_reminders", Context.MODE_PRIVATE)
+        val taskprefs = context.getSharedPreferences("task_reminders", Context.MODE_PRIVATE)
+        val dayBeforePrefs = context.getSharedPreferences("day_before_notifications", Context.MODE_PRIVATE)
         val today = Clock.System.now()
             .toLocalDateTime(TimeZone.currentSystemDefault())
             .date
             .toString()
-        prefs.all.keys.forEach { key ->
+        taskprefs.all.keys.forEach { key ->
             if (key.contains("task_") && !key.contains(today)) {
-                prefs.edit().remove(key).apply()
+                taskprefs.edit().remove(key).apply()
+            }
+        }
+        dayBeforePrefs.all.keys.forEach { key ->
+            if (key.contains("day_before_") && !key.contains(today)) {
+                dayBeforePrefs.edit().remove(key).apply()
             }
         }
     }
+
     private fun checkLegacyNotificationSettings() {
         val prefs = getSharedPreferences("notification_prefs", MODE_PRIVATE)
         if (!prefs.getBoolean("legacy_settings_checked", false)) {
@@ -66,7 +73,6 @@ class MainApplication : Application() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val channel = notificationManager.getNotificationChannel("task_reminders")
                 if (channel?.importance == NotificationManager.IMPORTANCE_NONE) {
-                    // Канал отключен, показываем подсказку
                     showNotificationSettingsHint()
                 }
             }

@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screen.component.Dialogs
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -64,14 +65,12 @@ fun AddTaskDialog(
     onDismiss: () -> Unit,
     onConfirm: (Task) -> Unit
 ) {
-    val items = listOf("Ежедневно","Еженедельно","Ежемесечно","Ежегодно")
-    var expanded by remember { mutableStateOf(false) }
-    var selectedItem by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var priority by remember { mutableStateOf(Priority.LOW) }
     var time by remember { mutableStateOf("") }
     var notifyEnabled by remember { mutableStateOf(false) }
+    var notifyDayBefore by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -105,33 +104,45 @@ fun AddTaskDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { notifyEnabled = !notifyEnabled }
-                ) {
-                OutlinedTextField(
-                    value = time,
-                    onValueChange = { newValue ->
-                        time = newValue.filter { it.isDigit() }.take(4)
-                    },
-                    label = { Text("00:00") },
-                    modifier = Modifier.width(100.dp),
-                    placeholder = { Text("00:00") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    visualTransformation = TimeTransformation()
-                )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { notifyEnabled = !notifyEnabled }
+                    ) {
+                        OutlinedTextField(
+                            value = time,
+                            onValueChange = { newValue ->
+                                time = newValue.filter { it.isDigit() }.take(4)
+                            },
+                            label = { Text("00:00") },
+                            modifier = Modifier.width(100.dp),
+                            placeholder = { Text("00:00") },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            visualTransformation = TimeTransformation()
+                        )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                        Checkbox(
+                            checked = notifyEnabled,
+                            onCheckedChange = { notifyEnabled = it }
+                        )
+                        Text("Уведомить за час")
+                    }
 
-                    Checkbox(
-                        checked = notifyEnabled,
-                        onCheckedChange = { notifyEnabled = it }
-                    )
-                    Text("Уведомить")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
 
-                Text("Приоритет:", color = MatuleTheme.colors.dark_blue)
+                    Row (
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { notifyDayBefore = !notifyDayBefore }
+                    ) {
+                        Spacer(modifier = Modifier.width(100.dp))
+                        Checkbox(
+                            checked = notifyDayBefore,
+                            onCheckedChange = { notifyDayBefore = it }
+                        )
+                        Text("Уведомить накануне (вечером)")
+                    }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text("Приоритет:", color = MatuleTheme.colors.dark_blue, modifier = Modifier.padding(start = 5.dp))
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -159,7 +170,8 @@ fun AddTaskDialog(
                         description = description,
                         priority = priority,
                         time = time,
-                        notifyEnabled = notifyEnabled
+                        notifyEnabled = notifyEnabled,
+                        notifyDayBefore = notifyDayBefore
                     )
                     onConfirm(newTask)
                     onDismiss()

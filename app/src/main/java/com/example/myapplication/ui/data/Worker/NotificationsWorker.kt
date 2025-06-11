@@ -18,8 +18,10 @@ import com.example.myapplication.R
 import com.example.myapplication.ui.data.local.repository.TaskRepository
 import com.example.myapplication.ui.data.remote.Tasks.formatAsTime
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -253,5 +255,82 @@ class TaskReminderWorker(
     companion object {
         const val CHANNEL_ID = "task_reminders"
     }
+}
 
+
+class DayBeforeNotificationWorker(
+    context: Context,
+    workerParams: WorkerParameters
+) : CoroutineWorker(context, workerParams), KoinComponent {
+
+    private val taskRepository: TaskRepository by inject()
+    private val pref = context.getSharedPreferences("day_before_notifications", Context.MODE_PRIVATE)
+
+    override suspend fun doWork(): Result {
+        try {
+            val tomorrow = Clock.System.now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date.plus(1, DateTimeUnit.DAY)
+
+            val tasks = taskRepository.getTasks()
+                .map { it.toTask() }
+                .filter { task ->
+                    task.notifyDayBefore &&
+                            task.date == tomorrow
+                }
+           tasks.forEach { task ->
+                val notificationKey = "day_before_${task.id}_${task.date}"
+                val alreadyNotified = pref.getBoolean(notificationKey, false)
+
+               if (!alreadyNotified) {
+                    sendNotification(
+                        title = "Напоминание на завтра",
+                        text = "Не забудьте, на завтра у вас запланировано: ${task.title}"
+                    )
+                    pref.edit().putBoolean(notificationKey, true).apply()
+                }
+            }
+
+            return Result.success()
+        } catch (e: Exception) {
+            return Result.failure()
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun sendNotification(title: String, text: String) {
+        createNotificationChannel()
+
+        val notificationId = title.hashCode()
+        val builder = NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+            .setSmallIcon(R.drawable.generated_image)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+
+        with(NotificationManagerCompat.from(applicationContext)) {
+            notify(notificationId, builder.build())
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Уведомления накануне",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Уведомления о задачах на следующий день"
+            }
+
+            val notificationManager = applicationContext.getSystemService(
+                Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    companion object {
+        const val CHANNEL_ID = "day_before_notifications"
+    }
 }

@@ -48,8 +48,9 @@ fun ChangeTaskDialog(
     var title by remember { mutableStateOf(task.title) }
     var description by remember { mutableStateOf(task.description) }
     var priority by remember { mutableStateOf(task.priority) }
-    var time by remember { mutableStateOf("") }
+    var time by remember { mutableStateOf(task.time ?: "") }
     var notifyEnabled by remember { mutableStateOf(false) }
+    var notifyDayBefore by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -98,13 +99,23 @@ fun ChangeTaskDialog(
                         visualTransformation = TimeTransformation()
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
                     Checkbox(
                         checked = notifyEnabled,
                         onCheckedChange = { notifyEnabled = it }
                     )
                     Text("Уведомить")
+                }
+
+                Row (
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { notifyDayBefore = !notifyDayBefore }
+                ) {
+                    Spacer(modifier = Modifier.width(100.dp))
+                    Checkbox(
+                        checked = notifyDayBefore,
+                        onCheckedChange = { notifyDayBefore = it }
+                    )
+                    Text("Уведомить накануне (вечером)")
                 }
 
                 Text("Приоритет:", color = MatuleTheme.colors.dark_blue)
@@ -153,7 +164,8 @@ fun ChangeTaskDialog(
                             description = description,
                             priority = priority,
                             time = time.takeIf { it.isNotBlank() },
-                            notifyEnabled = notifyEnabled
+                            notifyEnabled = notifyEnabled,
+                            notifyDayBefore = notifyDayBefore
                         )
                         onConfirm(updatedTask)
                         onDismiss()
