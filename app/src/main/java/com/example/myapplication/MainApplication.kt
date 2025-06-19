@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import TasksViewModel
 import android.annotation.SuppressLint
 import android.app.Application
 import android.app.NotificationManager
@@ -17,6 +18,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
@@ -100,5 +102,8 @@ class MainApplication : Application() {
             .setNegativeButton("Позже", null)
             .create()
         alertDialog.show()
+
+        val tasksViewModel: TasksViewModel by inject()
+        tasksViewModel.checkAndGenerateNewYearTasks()
     }
 }

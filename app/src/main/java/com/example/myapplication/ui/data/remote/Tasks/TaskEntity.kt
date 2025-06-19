@@ -13,7 +13,9 @@ data class TaskEntity(
     val priority: Int,
     val time: String? = null,
     val notifyEnabled: Boolean = false,
-    val notifyDayBefore: Boolean = false
+    val notifyDayBefore: Boolean = false,
+    val repeatType: Int = 0,
+    val originalTaskId: String? = null
 
 ) {
     fun toTask(): Task {
@@ -25,7 +27,9 @@ data class TaskEntity(
             priority = Priority.values()[priority],
             time = time,
             notifyEnabled = notifyEnabled,
-            notifyDayBefore = notifyDayBefore
+            notifyDayBefore = notifyDayBefore,
+            repeatType = RepeatType.values()[repeatType],
+            originalTaskId = originalTaskId
         )
     }
 }
@@ -39,6 +43,8 @@ fun Task.toEntity(): TaskEntity {
         priority = priority.ordinal,
         time = time,
         notifyEnabled = notifyEnabled,
-        notifyDayBefore = notifyDayBefore
+        notifyDayBefore = notifyDayBefore,
+        repeatType = repeatType.ordinal,
+        originalTaskId = originalTaskId
     )
 }

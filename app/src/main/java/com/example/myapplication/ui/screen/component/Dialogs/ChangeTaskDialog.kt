@@ -19,6 +19,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,6 +37,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.example.myapplication.ui.data.remote.Tasks.Priority
+import com.example.myapplication.ui.data.remote.Tasks.RepeatType
 import com.example.myapplication.ui.data.remote.Tasks.Task
 import com.example.myapplication.ui.theme.MatuleTheme
 
@@ -43,7 +46,7 @@ fun ChangeTaskDialog(
     task: Task,
     onDismiss: () -> Unit,
     onConfirm: (Task) -> Unit,
-    onDelete: () -> Unit
+    onDelete: (Boolean) -> Unit
 ) {
     var title by remember { mutableStateOf(task.title) }
     var description by remember { mutableStateOf(task.description) }
@@ -51,6 +54,9 @@ fun ChangeTaskDialog(
     var time by remember { mutableStateOf(task.time ?: "") }
     var notifyEnabled by remember { mutableStateOf(false) }
     var notifyDayBefore by remember { mutableStateOf(false) }
+    var repeatType by remember { mutableStateOf(task.repeatType) }
+    var showRepeatMenu by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -118,6 +124,58 @@ fun ChangeTaskDialog(
                     Text("Уведомить накануне (вечером)")
                 }
 
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showRepeatMenu = true }
+                        .padding(vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "Повторение:",
+                        color = MatuleTheme.colors.dark_blue,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+
+                    Text(
+                        text = when (repeatType) {
+                            RepeatType.NONE -> "Не повторять"
+                            RepeatType.DAILY -> "Ежедневно"
+                            RepeatType.WEEKLY -> "Еженедельно"
+                            RepeatType.MONTHLY -> "Ежемесячно"
+                            RepeatType.YEARLY -> "Ежегодно"
+                        },
+                        color = MatuleTheme.colors.dark_blue
+                    )
+
+                    DropdownMenu(
+                        expanded = showRepeatMenu,
+                        onDismissRequest = { showRepeatMenu = false }
+                    ) {
+                        RepeatType.values().forEach { type ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        when (type) {
+                                            RepeatType.NONE -> "Не повторять"
+                                            RepeatType.DAILY -> "Ежедневно"
+                                            RepeatType.WEEKLY -> "Еженедельно"
+                                            RepeatType.MONTHLY -> "Ежемесячно"
+                                            RepeatType.YEARLY -> "Ежегодно"
+                                        }
+                                    )
+                                },
+                                onClick = {
+                                    repeatType = type
+                                    showRepeatMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text("Приоритет:", color = MatuleTheme.colors.dark_blue)
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -142,10 +200,7 @@ fun ChangeTaskDialog(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = {
-                        onDelete()
-                        onDismiss()
-                    },
+                    onClick = { showDeleteDialog = true },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MatuleTheme.colors.bardovy,
                         contentColor = Color.White
@@ -165,7 +220,9 @@ fun ChangeTaskDialog(
                             priority = priority,
                             time = time.takeIf { it.isNotBlank() },
                             notifyEnabled = notifyEnabled,
-                            notifyDayBefore = notifyDayBefore
+                            notifyDayBefore = notifyDayBefore,
+                            repeatType = repeatType
+
                         )
                         onConfirm(updatedTask)
                         onDismiss()
@@ -182,7 +239,18 @@ fun ChangeTaskDialog(
                 Text("Отмена", color = MatuleTheme.colors.dark_blue)
             }
         }
-    )
+    );
+    if (showDeleteDialog) {
+        DialogDeleteRepitTasks(
+            task = task,
+            onDismiss = { showDeleteDialog = false },
+            onDelete = { deleteAll ->
+                showDeleteDialog = false
+                onDismiss()
+                onDelete(deleteAll)
+            }
+        )
+    }
 }
 
 @Composable
@@ -217,4 +285,53 @@ private fun PriorityChip(
         )
     }
 }
+
+@Composable
+internal fun DialogDeleteRepitTasks(
+    task: Task,
+    onDismiss: () -> Unit,
+    onDelete: (deleteAllRepeats: Boolean) -> Unit
+) {
+    var deleteAll by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Удаление задачи") },
+        text = {
+            Column {
+                Text("Вы хотите удалить эту задачу?")
+
+                if (task.repeatType != RepeatType.NONE || task.originalTaskId != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable { deleteAll = !deleteAll }
+                    ) {
+                        Checkbox(
+                            checked = deleteAll,
+                            onCheckedChange = { deleteAll = it }
+                        )
+                        Text("Удалить все повторения этой задачи")
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onDelete(deleteAll) },
+                colors = ButtonDefaults.buttonColors(MatuleTheme.colors.bardovy)
+            ) {
+                Text("Удалить")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Отмена")
+            }
+        }
+    )
+}
+
+
+
 

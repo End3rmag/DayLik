@@ -12,6 +12,12 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     suspend fun getAll(): List<TaskEntity>
 
+    @Query("SELECT * FROM tasks WHERE id = :id")
+    suspend fun getById(id: String): TaskEntity?
+
+    @Query("SELECT * FROM tasks WHERE originalTaskId = :originalId")
+    suspend fun getByOriginalId(originalId: String): List<TaskEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(task: TaskEntity)
 
@@ -20,4 +26,7 @@ interface TaskDao {
 
     @Update
     suspend fun update(task: TaskEntity)
+
+    @Query("DELETE FROM tasks WHERE originalTaskId = :originalId OR id = :originalId")
+    suspend fun deleteAllByOriginalId(originalId: String)
 }

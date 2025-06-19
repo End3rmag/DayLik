@@ -180,17 +180,15 @@ fun CalendarScrn(
             }
         }
     }
-    if (tasksViewModel.showDialog) {
-            tasksViewModel.selectedDate?.let { date ->
-                AddTaskDialog(
-                    date = date,
-                    onDismiss = { tasksViewModel.dismissDialog() },
-                    onConfirm = { task ->
-                        tasksViewModel.addTask(task)
-                    }
-                )
+    if (tasksViewModel.showDialog && tasksViewModel.selectedDate != null) {
+        AddTaskDialog(
+            date = tasksViewModel.selectedDate!!, // !! безопасно, так как мы уже проверили на null
+            onDismiss = { tasksViewModel.dismissDialog() },
+            onConfirm = { task ->
+                tasksViewModel.addTask(task)
             }
-        }
+        )
+    }
     if (showEditDialog && selectedTask != null) {
         ChangeTaskDialog(
             task = selectedTask!!,
@@ -199,9 +197,8 @@ fun CalendarScrn(
                 tasksViewModel.updateTask(updatedTask)
                 showEditDialog = false
             },
-            onDelete = {
-                tasksViewModel.deleteTask(selectedTask!!)
-                showEditDialog = false
+            onDelete = { deleteAll ->
+                tasksViewModel.deleteTask(selectedTask!!, deleteAll)
             }
         )
     }

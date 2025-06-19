@@ -10,13 +10,24 @@ data class Task(
     val priority: Priority,
     val time: String? = null,
     val notifyEnabled: Boolean = false,
-    val notifyDayBefore: Boolean = false
+    val notifyDayBefore: Boolean = false,
+    val repeatType: RepeatType = RepeatType.NONE,
+    val originalTaskId: String? = null,
+    val nextOccurrence: LocalDate? = null
 )
 
 enum class Priority {
     HIGH,
     MEDIUM,
     LOW
+}
+
+enum class RepeatType {
+    NONE,
+    DAILY,
+    WEEKLY,
+    MONTHLY,
+    YEARLY
 }
 
 
