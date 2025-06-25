@@ -18,8 +18,6 @@ val appModules = module {
     single { AppDatabase.getInstance(androidContext()) }
     single { get<AppDatabase>().taskDao() }
     single { TaskRepository(get()) }
-
     single { NotificationsManagement (androidContext()) }
-
     viewModel { TasksViewModel(get()) }
 }

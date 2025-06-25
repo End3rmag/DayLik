@@ -78,5 +78,4 @@ data class MonthData(
         return (h + 5) % 7
     }
 
-    fun getMonthName(): String = getMonthName(month)
 }

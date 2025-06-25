@@ -15,7 +15,9 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import android.app.AlertDialog
+import android.app.NotificationChannel
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.provider.Settings
 import org.koin.android.ext.android.inject
@@ -38,6 +40,8 @@ class MainApplication : Application() {
             .build()
         WorkManager.initialize(this, config)
 
+        createNotificationChannels()
+
         clearOldNotifications(this)
 
             val notificationsManagement = NotificationsManagement(applicationContext)
@@ -48,6 +52,37 @@ class MainApplication : Application() {
         }
 
     }
+
+    private fun createNotificationChannels() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val manager = getSystemService(NotificationManager::class.java)
+
+            // Канал для срочных напоминаний
+            val taskReminderChannel = NotificationChannel(
+                "task_reminders",
+                "Срочные напоминания",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Уведомления за час до задачи"
+                enableLights(true)
+                lightColor = Color.RED
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 500, 200, 500)
+            }
+            manager.createNotificationChannel(taskReminderChannel)
+
+            // Канал для ежедневных уведомлений
+            val dailyChannel = NotificationChannel(
+                "daily_reminders",
+                "Ежедневные напоминания",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Ежедневные уведомления о задачах"
+            }
+            manager.createNotificationChannel(dailyChannel)
+        }
+    }
+
     fun clearOldNotifications(context: Context) {
         val taskprefs = context.getSharedPreferences("task_reminders", Context.MODE_PRIVATE)
         val dayBeforePrefs = context.getSharedPreferences("day_before_notifications", Context.MODE_PRIVATE)
@@ -102,7 +137,7 @@ class MainApplication : Application() {
             .setNegativeButton("Позже", null)
             .create()
         alertDialog.show()
-
+ 55
         val tasksViewModel: TasksViewModel by inject()
         tasksViewModel.checkAndGenerateNewYearTasks()
     }

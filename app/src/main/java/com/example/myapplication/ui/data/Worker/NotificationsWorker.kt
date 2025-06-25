@@ -16,6 +16,7 @@ import androidx.work.WorkerParameters
 import com.example.myapplication.MainActivity
 import com.example.myapplication.R
 import com.example.myapplication.ui.data.local.repository.TaskRepository
+import com.example.myapplication.ui.data.remote.Tasks.Task
 import com.example.myapplication.ui.data.remote.Tasks.formatAsTime
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
@@ -126,134 +127,100 @@ class TaskReminderWorker(
     override suspend fun doWork(): Result {
         try {
             val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            val currentDate = now.date
+            val currentTimeInMinutes = now.hour * 60 + now.minute
+
+            Log.d("TaskReminder", "Checking tasks at ${now.hour}:${now.minute}")
+
             val tasks = taskRepository.getTasks()
                 .map { it.toTask() }
                 .filter { task ->
                     task.notifyEnabled &&
                             task.time != null &&
-                            task.date == now.date &&
-                            isTimeWithinHour(task.time, now)
+                            task.date == currentDate
                 }
+
+            Log.d("TaskReminder", "Found ${tasks.size} tasks to check")
 
             tasks.forEach { task ->
+                val taskTime = parseTime(task.time!!) ?: return@forEach
+                val notificationTime = taskTime - 60 // За час до события
                 val notificationKey = "task_${task.id}_${task.date}_${task.time}"
-                val alreadyNotifed = pref.getBoolean(notificationKey, false)
 
-                if(!alreadyNotifed){
-                val notificationText = "Вы запланировали: ${task.title}\n" +
-                        "На: ${task.time?.formatAsTime()}"
-                sendNotification(
-                    title = "Напоминание",
-                    text = notificationText
-                    )
+                Log.d("TaskReminder", "Task: ${task.title}, Time: $taskTime, NotifyAt: $notificationTime")
+
+                if (currentTimeInMinutes in notificationTime until taskTime) {
+                    if (!pref.getBoolean(notificationKey, false)) {
+                        Log.d("TaskReminder", "Sending notification for: ${task.title}")
+                        sendNotification(task)
+                        pref.edit().putBoolean(notificationKey, true).apply()
+                    }
                 }
-                pref.edit().putBoolean(notificationKey, true).apply()
             }
 
             return Result.success()
         } catch (e: Exception) {
+            Log.e("TaskReminder", "Error in worker", e)
             return Result.failure()
         }
     }
 
-    private fun isTimeWithinHour(taskTime: String, now: LocalDateTime): Boolean {
-        val formattedTime = if (taskTime.length == 4 && !taskTime.contains(":")) {
-            "${taskTime.take(2)}:${taskTime.drop(2)}"
-        } else {
-            taskTime
-        }
-
-        val (hours, minutes) = try {
-            formattedTime.split(":").map { it.toInt() }
+    private fun parseTime(timeStr: String): Int? {
+        return try {
+            val cleanTime = timeStr.replace(":", "").take(4).padStart(4, '0')
+            val hours = cleanTime.take(2).toInt()
+            val minutes = cleanTime.drop(2).take(2).toInt()
+            hours * 60 + minutes
         } catch (e: Exception) {
-            Log.e("TaskReminder", "Error parsing time: $formattedTime", e)
-            return false
+            Log.e("TaskReminder", "Error parsing time: $timeStr", e)
+            null
         }
-
-        val currentMinutes = now.hour * 60 + now.minute
-        val taskMinutes = hours * 60 + minutes
-        val notificationMinutes = taskMinutes - 60
-
-        return currentMinutes in notificationMinutes..taskMinutes
     }
 
     @SuppressLint("MissingPermission")
-    private fun sendNotification(title: String, text: String) {
+    private fun sendNotification(task: Task) {
+        createNotificationChannel() // Дублирующая проверка на случай, если канал был удален
 
-        createLegacyNotificationChannel()
+        val notificationText = "Вы запланировали: ${task.title}\n" +
+                "На: ${task.time?.formatAsTime()}"
 
-        val notificationId = title.hashCode()
-        val builder = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            NotificationCompat.Builder(applicationContext, CHANNEL_ID)
-                .setSmallIcon(R.drawable.generated_image)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setAutoCancel(true)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setVibrate(longArrayOf(0, 500, 200, 500))
-                .setLights(Color.RED, 1000, 1000)
-                .setFullScreenIntent(createFullScreenIntent(), true)
-        } else {
-            NotificationCompat.Builder(applicationContext, CHANNEL_ID)
-                .setSmallIcon(R.drawable.generated_image)
-                .setContentTitle(title)
-                .setContentText(text)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true)
-        }
+        val notificationId = task.id.hashCode()
+        val builder = NotificationCompat.Builder(applicationContext, "task_reminders")
+            .setSmallIcon(R.drawable.generated_image)
+            .setContentTitle("Напоминание о задаче")
+            .setContentText(notificationText)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
         with(NotificationManagerCompat.from(applicationContext)) {
             try {
                 notify(notificationId, builder.build())
+                Log.d("TaskReminder", "Notification sent successfully")
             } catch (e: Exception) {
-                Log.e("TaskReminder", "Error sending notification", e)
+                Log.e("TaskReminder", "Failed to send notification", e)
             }
         }
     }
 
-    private fun createLegacyNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID,
+                "task_reminders",
                 "Срочные напоминания",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Важные напоминания о задачах"
+                description = "Уведомления за час до задачи"
                 enableLights(true)
                 lightColor = Color.RED
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 500, 200, 500)
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             }
 
             val notificationManager = applicationContext.getSystemService(
                 Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
-    }
-
-    private fun createFullScreenIntent(): PendingIntent? {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            val intent = Intent(applicationContext, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                putExtra("from_notification", true)
-            }
-            return PendingIntent.getActivity(
-                applicationContext,
-                0,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        }
-        return null
-    }
-
-
-    companion object {
-        const val CHANNEL_ID = "task_reminders"
     }
 }
 

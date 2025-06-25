@@ -52,8 +52,8 @@ fun ChangeTaskDialog(
     var description by remember { mutableStateOf(task.description) }
     var priority by remember { mutableStateOf(task.priority) }
     var time by remember { mutableStateOf(task.time ?: "") }
-    var notifyEnabled by remember { mutableStateOf(false) }
-    var notifyDayBefore by remember { mutableStateOf(false) }
+    var notifyEnabled by remember { mutableStateOf(task.notifyEnabled) }
+    var notifyDayBefore by remember { mutableStateOf(task.notifyDayBefore) }
     var repeatType by remember { mutableStateOf(task.repeatType) }
     var showRepeatMenu by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }

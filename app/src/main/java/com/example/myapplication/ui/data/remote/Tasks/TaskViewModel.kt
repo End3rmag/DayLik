@@ -169,9 +169,7 @@ class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
                         _tasks.remove(date)
                     }
                 }
-            } catch (e: Exception) {
-                Log.e("TasksViewModel", "Error deleting task", e)
-            }
+            } catch (e: Exception) { }
         }
     }
     }

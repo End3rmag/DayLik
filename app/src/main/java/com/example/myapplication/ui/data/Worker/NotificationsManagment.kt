@@ -34,11 +34,12 @@ class NotificationsManagement(
     private fun setupTaskReminders() {
         val reminderRequest = PeriodicWorkRequestBuilder<TaskReminderWorker>(
             15, TimeUnit.MINUTES
-        ).build()
+        ).setInitialDelay(15, TimeUnit.MINUTES)
+            .build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "task_reminder_work",
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             reminderRequest
         )
     }
