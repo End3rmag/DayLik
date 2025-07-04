@@ -235,31 +235,42 @@ class DayBeforeNotificationWorker(
 
     override suspend fun doWork(): Result {
         try {
-            val tomorrow = Clock.System.now()
-                .toLocalDateTime(TimeZone.currentSystemDefault())
-                .date.plus(1, DateTimeUnit.DAY)
+            val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            val tomorrow = now.date.plus(1, DateTimeUnit.DAY)
 
+            // Получаем все задачи на завтра с флагом уведомления накануне
             val tasks = taskRepository.getTasks()
                 .map { it.toTask() }
                 .filter { task ->
-                    task.notifyDayBefore &&
-                            task.date == tomorrow
+                    task.notifyDayBefore && task.date == tomorrow
                 }
-           tasks.forEach { task ->
-                val notificationKey = "day_before_${task.id}_${task.date}"
-                val alreadyNotified = pref.getBoolean(notificationKey, false)
 
-               if (!alreadyNotified) {
+            Log.d("DayBeforeWorker", "Found ${tasks.size} tasks for tomorrow")
+
+            tasks.forEach { task ->
+                val notificationKey = "day_before_${task.id}_${task.date}"
+                if (!pref.getBoolean(notificationKey, false)) {
+                    // Формируем текст уведомления
+                    val notificationText = buildString {
+                        append("На завтра запланировано: ${task.title}")
+                        if (!task.time.isNullOrBlank()) {
+                            append(" в ${task.time.formatAsTime()}")
+                        }
+                    }
+
                     sendNotification(
-                        title = "Напоминание на завтра",
-                        text = "Не забудьте, на завтра у вас запланировано: ${task.title}"
+                        title = "Напоминание",
+                        text = notificationText
                     )
+
                     pref.edit().putBoolean(notificationKey, true).apply()
+                    Log.d("DayBeforeWorker", "Notification sent for task: ${task.title}")
                 }
             }
 
             return Result.success()
         } catch (e: Exception) {
+            Log.e("DayBeforeWorker", "Error in worker", e)
             return Result.failure()
         }
     }
@@ -277,7 +288,11 @@ class DayBeforeNotificationWorker(
             .setAutoCancel(true)
 
         with(NotificationManagerCompat.from(applicationContext)) {
-            notify(notificationId, builder.build())
+            try {
+                notify(notificationId, builder.build())
+            } catch (e: Exception) {
+                Log.e("DayBeforeWorker", "Notification failed", e)
+            }
         }
     }
 
@@ -289,8 +304,10 @@ class DayBeforeNotificationWorker(
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
                 description = "Уведомления о задачах на следующий день"
+                enableLights(true)
+                lightColor = Color.BLUE
+                enableVibration(true)
             }
-
             val notificationManager = applicationContext.getSystemService(
                 Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)

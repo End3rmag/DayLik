@@ -84,22 +84,14 @@ class MainApplication : Application() {
     }
 
     fun clearOldNotifications(context: Context) {
+        val notificationManager = context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancelAll() // Очищаем все уведомления
+
         val taskprefs = context.getSharedPreferences("task_reminders", Context.MODE_PRIVATE)
         val dayBeforePrefs = context.getSharedPreferences("day_before_notifications", Context.MODE_PRIVATE)
-        val today = Clock.System.now()
-            .toLocalDateTime(TimeZone.currentSystemDefault())
-            .date
-            .toString()
-        taskprefs.all.keys.forEach { key ->
-            if (key.contains("task_") && !key.contains(today)) {
-                taskprefs.edit().remove(key).apply()
-            }
-        }
-        dayBeforePrefs.all.keys.forEach { key ->
-            if (key.contains("day_before_") && !key.contains(today)) {
-                dayBeforePrefs.edit().remove(key).apply()
-            }
-        }
+
+        taskprefs.edit().clear().apply()
+        dayBeforePrefs.edit().clear().apply()
     }
 
     private fun checkLegacyNotificationSettings() {

@@ -24,7 +24,6 @@ import androidx.navigation.Navigation
 import androidx.navigation.Navigator
 import com.example.myapplication.R
 
-import com.example.myapplication.ui.local.DataStoreOnBoarding
 import com.example.myapplication.ui.theme.MatuleTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow

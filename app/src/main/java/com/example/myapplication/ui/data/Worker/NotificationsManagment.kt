@@ -46,15 +46,15 @@ class NotificationsManagement(
 
     private fun setupDayBeforeNotifications() {
         val dayBeforeRequest = PeriodicWorkRequestBuilder<DayBeforeNotificationWorker>(
-            24, TimeUnit.HOURS
+            24, TimeUnit.HOURS // Временно для теста
         ).setInitialDelay(
-            calculateInitialDelay(19,0),
+            calculateInitialDelay(18, 0), // Установите ближайшее время
             TimeUnit.MILLISECONDS
         ).build()
 
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "day_before_notification_work",
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             dayBeforeRequest
         )
     }
